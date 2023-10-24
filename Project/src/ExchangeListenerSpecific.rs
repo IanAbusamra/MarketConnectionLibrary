@@ -1,5 +1,6 @@
 pub struct ExchangeListenerSpecific {
     id: i32,
+    name: String,
     subscription: WebSocket,
     queue: Queue<DataPacket>,
 }
