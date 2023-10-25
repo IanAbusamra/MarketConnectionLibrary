@@ -7,3 +7,5 @@ edition = "2021"
 
 [dependencies]
 queues = "1.0.2"
+tungstenite = "0.15"
+url = "2.2"
