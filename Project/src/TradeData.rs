@@ -8,7 +8,7 @@ enum order_type {
     Sell,
 }
 
-pub struct TradeData {
+pub struct TradeDataPacket {
     //don't know what info the traders are going to put here, placeholders for now
     exchange: exchange_type,
     coin: String,
