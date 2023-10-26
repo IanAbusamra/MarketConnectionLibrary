@@ -7,7 +7,7 @@ use std::collections::VecDeque;
 pub struct BinanceExchangeListener {
     id: i32,
     subscription: WebSocket,
-    queue: VecDeque<Box<dyn DataPacket>>,
+    queue: VecDeque<DataPacket>,
 }
 
 impl BinanceExchangeListener {
@@ -39,9 +39,7 @@ impl ExchangeListener for BinanceExchangeListener {
     }
 
     fn parse_message(&self, message: &str) -> DataPacket {
-        //Box::new(MarketData::new("Test".to_string()))
-        //Unfinished, also currently only implemented for binance
-        //maybe change to vector of top x values instead of just best.
+        //Binance only as of now, will need to add a way to identify which exchange it is from and store accordingly.
         let parsed_data: serde_json::Value = serde_json::from_str(&message).expect("Unable to parse message");
         let cur_marketdata = MarketData {
             exchange: Binance,
@@ -56,7 +54,8 @@ impl ExchangeListener for BinanceExchangeListener {
         self.queue.push_back(data_packet);
     }
 
-    fn next(&self) -> Option<&Box<dyn DataPacket>> {
+    //before: "fn next(&self) -> Option<&Box<dyn DataPacket>>"
+    fn next(&self) -> Option<&DataPacket> {
         self.queue.front()
     }
 
