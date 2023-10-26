@@ -1,6 +1,9 @@
-use tungstenite::{connect, Message, WebSocket as TungsteniteWebSocket};
+use tungstenite::{connect, Message};
 use tungstenite::stream::MaybeTlsStream;
 use url::Url;
+use std::net::TcpStream;
+use tungstenite::Error as TungsteniteError;
+use url::ParseError as UrlParseError;
 
 pub struct WebSocket {
     url: String,
@@ -15,13 +18,20 @@ impl WebSocket {
         }
     }
 
-    pub fn connect(&mut self) -> Result<(), tungstenite::Error> {
-        let (socket, response) = connect(Url::parse(&self.url)?)?;
+    pub fn connect(&mut self) -> Result<(), TungsteniteError> {
+        let url = Url::parse(&self.url).map_err(|e| match e {
+            UrlParseError::EmptyHost => TungsteniteError::Url(tungstenite::error::UrlError::UnableToConnect("empty host".to_string())),
+            UrlParseError::IdnaError => TungsteniteError::Url(tungstenite::error::UrlError::UnableToConnect("IDNA error".to_string())),
+            
+            _ => TungsteniteError::Url(tungstenite::error::UrlError::UnableToConnect("other URL parse error".to_string())),
+        })?;
+        let (socket, response) = connect(url)?;
         println!("Connected to the WebSocket server.");
         println!("HTTP status code: {}", response.status());
         self.socket = Some(socket);
         Ok(())
     }
+    
 
     pub fn send(&mut self, message: &str) -> Result<(), tungstenite::Error> {
         if let Some(socket) = &mut self.socket {

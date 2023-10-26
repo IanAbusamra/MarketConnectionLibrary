@@ -4,24 +4,28 @@ use crate::web_socket::WebSocket;
 use crate::data_packet::DataPacket;
 use std::collections::VecDeque;
 
-pub struct BinanceExchangeListener {
+pub struct BinanceExchangeListener<'a> {
     id: i32,
-    subscription: WebSocket,
+    subscription: &'a mut WebSocket,
     queue: VecDeque<Box<dyn DataPacket>>,
 }
 
-impl BinanceExchangeListener {
-    pub fn new(id: i32, subscription: WebSocket) -> Self {
+impl<'a> BinanceExchangeListener<'a> {
+    pub fn new(id: i32, subscription:  &'a mut WebSocket) -> Self {
         BinanceExchangeListener {
             id,
             subscription,
             queue: VecDeque::new(),
         }
     }
+
+    pub fn get_subscription(&mut self) -> &mut WebSocket {
+        &mut self.subscription
+    }
 }
 
-impl ExchangeListener for BinanceExchangeListener {
-    fn subscribe(&mut self, ws: &WebSocket) {
+impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
+    fn subscribe(&mut self) {
         self.subscription.connect().expect("Failed to connect");
         println!("Subscribed to Binance WebSocket");
     }
@@ -31,13 +35,16 @@ impl ExchangeListener for BinanceExchangeListener {
         println!("Unsubscribed from Binance WebSocket");
     }
 
-    fn on_message(&mut self, json: &str) {
-        if let Ok(Some(message)) = self.subscription.receive() {
-            let data_packet = self.parse_message(&message);
+    fn on_message(&mut self, json: Option<&str>) {
+        if let Some(message) = json {
+            let data_packet = self.parse_message(message);
             self.add_parsed_data(data_packet);
+        } else {
+            // Not sure what to do when no message comes in
+            println!("nothing");
         }
     }
-
+    
     fn parse_message(&self, message: &str) -> Box<dyn DataPacket> {
         Box::new(MarketData::new("Test".to_string()))
     }
@@ -50,7 +57,7 @@ impl ExchangeListener for BinanceExchangeListener {
         self.queue.front()
     }
 
-    fn set_id(&self, new_id: i32) {
+    fn set_id(&mut self, new_id: i32) {
         self.id = new_id;
     }
 
