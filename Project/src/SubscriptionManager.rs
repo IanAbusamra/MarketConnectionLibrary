@@ -18,6 +18,7 @@ impl SubscriptionManager{
     }
     pub fn update_subscriptions(&self, e: &impl ExchangelLstener, a: &String) {
         let target_subscriptions = self.get_subscriptions(e, a);
+        
         // loop through target_subscriptions and update 
         todo!();
     }
