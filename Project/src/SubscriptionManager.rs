@@ -23,7 +23,7 @@ impl SubscriptionManager{
         // iterate through subscriptions and update according to val
         // details will need to be worked out with other teams
         for sub in target_subscriptions.iter() {
-            *sub.data_structure.update(val);        
+            *sub.data_structure.add_datapacket(val);        
         }
     }
 }
