@@ -44,7 +44,7 @@ impl WebSocket {
 
     pub fn receive(&mut self) -> Result<Option<String>, tungstenite::Error> {
         if let Some(socket) = &mut self.socket {
-            let msg = socket.read()?;
+            let msg = socket.read_message()?;
             match msg {
                 Message::Text(text) => Ok(Some(text)),
                 Message::Binary(bin) => Ok(Some(String::from_utf8_lossy(&bin).to_string())),

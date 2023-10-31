@@ -53,8 +53,8 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
         self.queue.push_back(data_packet);
     }
 
-    fn next(&self) -> Option<&Box<dyn DataPacket>> {
-        self.queue.front()
+    fn next(&mut self) -> Option<Box<dyn DataPacket>> {
+        self.queue.pop_front()
     }
 
     fn set_id(&mut self, new_id: i32) {
