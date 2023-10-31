@@ -7,5 +7,5 @@ edition = "2021"
 
 [dependencies]
 queues = "1.0.2"
-tungstenite = "0.15"
+tungstenite = { version = "0.20.0", features = ["native-tls"] }
 url = "2.2"
