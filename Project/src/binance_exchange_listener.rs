@@ -46,7 +46,7 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
     }
     
     fn parse_message(&self, message: &str) -> Box<dyn DataPacket> {
-        Box::new(MarketData::new("Test".to_string()))
+        Box::new(MarketData::new(message.to_string()))
     }
 
     fn add_parsed_data(&mut self, data_packet: Box<dyn DataPacket>) {
