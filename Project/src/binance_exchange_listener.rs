@@ -1,8 +1,11 @@
 use async_trait::async_trait;
 use crate::exchange_listener::ExchangeListener;
-use crate::market_data::MarketData;
+//use crate::market_data::MarketData;
 use crate::web_socket::WebSocket;
 use crate::data_packet::DataPacket;
+use crate::data_packet::DataEnum;
+use crate::data_packet::MessageType1;
+use crate::data_packet::MessageType2;
 
 pub struct BinanceExchangeListener<'a> {
     id: i32,
@@ -40,11 +43,21 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
         }
     }
     
-    fn parse_message(&self, message: &str) -> Box<dyn DataPacket> {
-        Box::new(MarketData::new(message.to_string()))
+    fn parse_message(&self, message: &str) -> Box<DataPacket> {
+        //Box::new(MarketData::new(message.to_string()))
+        let parsed_data: serde_json::Value = serde_json::from_str(message).expect("Unable to parse message");
+        let enumtest1 = MessageType2 {
+            bestask: parsed_data["asks"][0][0].as_str().expect("Issue parsing JSON").parse().unwrap(),
+        };
+        let test1 = DataPacket {
+            Data: DataEnum::M2(enumtest1),
+            Exchange: String::from("huobi"),
+            Channel: String::from("test"),
+        };
+        Box::new(test1)
     }
 
-    async fn next(&mut self) -> Option<Box<dyn DataPacket>> {
+    async fn next(&mut self) -> Option<Box<DataPacket>> {
         match self.subscription.receive().await {
             Ok(Some(message)) => Some(self.parse_message(&message)),
             Ok(None) => None,

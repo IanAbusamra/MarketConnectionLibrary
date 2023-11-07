@@ -7,8 +7,8 @@ pub trait ExchangeListener {
     async fn subscribe(&mut self);
     async fn unsubscribe(&mut self);
     async fn on_message(&mut self, json: Option<&str>);
-    fn parse_message(&self, message: &str) -> Box<dyn DataPacket>;
-    async fn next(&mut self) -> Option<Box<dyn DataPacket>>;
+    fn parse_message(&self, message: &str) -> Box<DataPacket>;
+    async fn next(&mut self) -> Option<Box<DataPacket>>;
     fn set_id(&mut self, new_id: i32);
     fn get_id(&self) -> i32;
 }

@@ -9,6 +9,7 @@ use crate::binance_exchange_listener::BinanceExchangeListener;
 use crate::data_packet::DataPacket;
 use crate::web_socket::WebSocket;
 use crate::exchange_listener::ExchangeListener;
+use crate::data_packet::MessageType2;
 use tokio;
 
 static BINANCE_WS_API: &str = "wss://stream.binance.us:9443";
@@ -37,6 +38,13 @@ async fn main() {
         binance_listener.on_message(message.as_deref()).await;
     
         if let Some(data_packet) = binance_listener.next().await {
+            //trying to actually access value from enum
+            // let mut testm2 = match data_packet.Data {
+            //     DataPacket::DataEnum::MessageType2(c) => c,
+            //     _ => unreachable!()
+            // };
+            //let testm2: MessageType2 = data_packet.Data;
+            //println!("{}", "testing");
             println!("Received data: {}", data_packet.get_data());
             println!("Formatted version: Best Ask: {}, Best Ask Amount: {}", data_packet.get_best_ask(), data_packet.get_ask_amt());
         }
