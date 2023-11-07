@@ -1,5 +1,5 @@
 use crate::exchange_listener::ExchangeListener;
-use crate::market_data::MarketData;
+//use crate::market_data::MarketData;
 use crate::web_socket::WebSocket;
 use crate::data_packet::DataPacket;
 use std::collections::VecDeque;
@@ -7,7 +7,7 @@ use std::collections::VecDeque;
 pub struct BinanceExchangeListener<'a> {
     id: i32,
     subscription: &'a mut WebSocket,
-    queue: VecDeque<Box<dyn DataPacket>>,
+    queue: VecDeque<Box<DataPacket>>,
 }
 
 impl<'a> BinanceExchangeListener<'a> {
@@ -45,15 +45,21 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
         }
     }
     
-    fn parse_message(&self, message: &str) -> Box<dyn DataPacket> {
-        Box::new(MarketData::new(message.to_string()))
+    fn parse_message(&self, message: &str) -> Box<DataPacket> {
+        //Box::new(MarketData::new(message.to_string()))
+        let test1 = DataPacket {
+            DataTest: String::from("will be enum"),
+            Exchange: String::from("huobi"),
+            Channel: String::from("test"),
+        };
+        Box::new(test1)
     }
 
-    fn add_parsed_data(&mut self, data_packet: Box<dyn DataPacket>) {
+    fn add_parsed_data(&mut self, data_packet: Box<DataPacket>) {
         self.queue.push_back(data_packet);
     }
 
-    fn next(&mut self) -> Option<Box<dyn DataPacket>> {
+    fn next(&mut self) -> Option<Box<DataPacket>> {
         self.queue.pop_front()
     }
 

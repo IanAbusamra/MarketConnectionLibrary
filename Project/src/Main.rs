@@ -35,8 +35,9 @@ fn main() {
         binance_listener.on_message(message.as_deref());
     
         if let Some(data_packet) = binance_listener.next() {
-            println!("Received data: {}", data_packet.get_data());
-            println!("Formatted version: Best Ask: {}, Best Ask Amount: {}", data_packet.get_best_ask(), data_packet.get_ask_amt());
+            println!("{}", data_packet.Channel);
+            //println!("Received data: {}", data_packet.get_data());
+            //println!("Formatted version: Best Ask: {}, Best Ask Amount: {}", data_packet.get_best_ask(), data_packet.get_ask_amt());
         }
     
         std::thread::sleep(std::time::Duration::from_millis(1000));
