@@ -1,6 +1,6 @@
 pub struct DataPacket {
     //change back to dataenum
-    pub DataTest: String,
+    pub Data: DataEnum,
     pub Exchange: String,
     pub Channel: String,
 }
@@ -13,11 +13,11 @@ pub enum DataEnum {
 }
 
 pub struct MessageType1 {
-    data: String,
-    BestAsk: f64,
-    AskAmt: f64,
+    pub data: String,
+    pub BestAsk: f64,
+    pub AskAmt: f64,
 }
 
 pub struct MessageType2 {
-    data: String,
+    pub bestask: String,
 }

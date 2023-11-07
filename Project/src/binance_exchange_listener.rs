@@ -2,6 +2,9 @@ use crate::exchange_listener::ExchangeListener;
 //use crate::market_data::MarketData;
 use crate::web_socket::WebSocket;
 use crate::data_packet::DataPacket;
+use crate::data_packet::DataEnum;
+use crate::data_packet::MessageType1;
+use crate::data_packet::MessageType2;
 use std::collections::VecDeque;
 
 pub struct BinanceExchangeListener<'a> {
@@ -47,8 +50,12 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
     
     fn parse_message(&self, message: &str) -> Box<DataPacket> {
         //Box::new(MarketData::new(message.to_string()))
+        let parsed_data: serde_json::Value = serde_json::from_str(message).expect("Unable to parse message");
+        let enumtest1 = MessageType2 {
+            bestask: parsed_data["asks"][0][0].as_str().expect("Issue parsing JSON").parse().unwrap(),
+        };
         let test1 = DataPacket {
-            DataTest: String::from("will be enum"),
+            Data: DataEnum::M2(enumtest1),
             Exchange: String::from("huobi"),
             Channel: String::from("test"),
         };
