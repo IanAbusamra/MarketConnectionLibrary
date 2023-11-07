@@ -1,0 +1,10 @@
+C:\Users\aniru\OneDrive\Documents\Georgia_Tech\Trading_Club\Fall_2023\MarketConnectionLibrary\Project\target\debug\deps\sha1-2f797db1258168fd.rmeta: C:\Users\aniru\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sha-1-0.10.1\src\lib.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sha-1-0.10.1\src\compress.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sha-1-0.10.1\src\compress\soft.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sha-1-0.10.1\src\compress\x86.rs
+
+C:\Users\aniru\OneDrive\Documents\Georgia_Tech\Trading_Club\Fall_2023\MarketConnectionLibrary\Project\target\debug\deps\libsha1-2f797db1258168fd.rlib: C:\Users\aniru\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sha-1-0.10.1\src\lib.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sha-1-0.10.1\src\compress.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sha-1-0.10.1\src\compress\soft.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sha-1-0.10.1\src\compress\x86.rs
+
+C:\Users\aniru\OneDrive\Documents\Georgia_Tech\Trading_Club\Fall_2023\MarketConnectionLibrary\Project\target\debug\deps\sha1-2f797db1258168fd.d: C:\Users\aniru\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sha-1-0.10.1\src\lib.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sha-1-0.10.1\src\compress.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sha-1-0.10.1\src\compress\soft.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sha-1-0.10.1\src\compress\x86.rs
+
+C:\Users\aniru\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sha-1-0.10.1\src\lib.rs:
+C:\Users\aniru\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sha-1-0.10.1\src\compress.rs:
+C:\Users\aniru\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sha-1-0.10.1\src\compress\soft.rs:
+C:\Users\aniru\.cargo\registry\src\index.crates.io-6f17d22bba15001f\sha-1-0.10.1\src\compress\x86.rs:

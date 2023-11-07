@@ -1,13 +1,12 @@
-use tungstenite::{connect, Message};
-use tungstenite::stream::MaybeTlsStream;
+use tokio_tungstenite::{WebSocketStream, connect_async, MaybeTlsStream};
+use tokio_tungstenite::tungstenite::{Message, error::Error as TungsteniteError};
+use tokio::net::TcpStream;
+use futures_util::{StreamExt, SinkExt};
 use url::Url;
-use std::net::TcpStream;
-use tungstenite::Error as TungsteniteError;
-use url::ParseError as UrlParseError;
 
 pub struct WebSocket {
     url: String,
-    socket: Option<tungstenite::WebSocket<MaybeTlsStream<TcpStream>>>,
+    socket: Option<WebSocketStream<MaybeTlsStream<TcpStream>>>,
 }
 
 impl WebSocket {
@@ -18,37 +17,44 @@ impl WebSocket {
         }
     }
 
-    pub fn connect(&mut self) -> Result<(), TungsteniteError> {
-        let url = Url::parse(&self.url).map_err(|e| match e {
-            UrlParseError::EmptyHost => TungsteniteError::Url(tungstenite::error::UrlError::UnableToConnect("empty host".to_string())),
-            UrlParseError::IdnaError => TungsteniteError::Url(tungstenite::error::UrlError::UnableToConnect("IDNA error".to_string())),
-            
-            _ => TungsteniteError::Url(tungstenite::error::UrlError::UnableToConnect("other URL parse error".to_string())),
-        })?;
-        let (socket, response) = connect(url)?;
+    pub async fn connect(&mut self) -> Result<(), TungsteniteError> {
+        let url_result = Url::parse(&self.url);
+        let url = match url_result {
+            Ok(url) => url,
+            Err(e) => {
+                let error_msg = format!("URL parse error: {}", e);
+                return Err(TungsteniteError::Io(std::io::Error::new(std::io::ErrorKind::Other, error_msg)));
+            }
+        };
+    
+        let (socket, response) = connect_async(url).await?;
+        
         println!("Connected to the WebSocket server.");
         println!("HTTP status code: {}", response.status());
+        
         self.socket = Some(socket);
         Ok(())
     }
-    
 
-    pub fn send(&mut self, message: &str) -> Result<(), tungstenite::Error> {
+    pub async fn send(&mut self, message: &str) -> Result<(), TungsteniteError> {
         if let Some(socket) = &mut self.socket {
-            socket.send(Message::Text(message.to_string()))?;
+            socket.send(Message::Text(message.to_string())).await?;
         } else {
             println!("Socket is not connected.");
         }
         Ok(())
     }
 
-    pub fn receive(&mut self) -> Result<Option<String>, tungstenite::Error> {
-        if let Some(socket) = &mut self.socket {
-            let msg = socket.read_message()?;
-            match msg {
-                Message::Text(text) => Ok(Some(text)),
-                Message::Binary(bin) => Ok(Some(String::from_utf8_lossy(&bin).to_string())),
-                _ => Ok(None),
+    pub async fn receive(&mut self) -> Result<Option<String>, TungsteniteError> {
+        if let Some(socket) = self.socket.as_mut() {
+            match socket.next().await {
+                Some(Ok(message)) => match message {
+                    Message::Text(text) => Ok(Some(text)),
+                    Message::Binary(bin) => Ok(Some(String::from_utf8_lossy(&bin).to_string())),
+                    _ => Ok(None),
+                },
+                Some(Err(e)) => Err(e),
+                None => Ok(None),
             }
         } else {
             println!("Socket is not connected.");
@@ -56,10 +62,10 @@ impl WebSocket {
         }
     }
 
-    pub fn close(&mut self) -> Result<(), tungstenite::Error> {
-        if let Some(socket) = &mut self.socket {
-            socket.close(None)?;
+    pub async fn close(&mut self) -> Result<(), TungsteniteError> {
+        if let Some(mut socket) = self.socket.take() {
+            socket.close(None).await?;
         }
         Ok(())
-    }
+    }    
 }

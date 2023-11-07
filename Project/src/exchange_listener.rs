@@ -1,13 +1,14 @@
+use async_trait::async_trait;
 use crate::data_packet::DataPacket;
 use std::option::Option;
 
+#[async_trait]
 pub trait ExchangeListener {
-    fn subscribe(&mut self);
-    fn unsubscribe(&mut self);
-    fn on_message(&mut self, json: Option<&str>); // need help implementing
+    async fn subscribe(&mut self);
+    async fn unsubscribe(&mut self);
+    async fn on_message(&mut self, json: Option<&str>);
     fn parse_message(&self, message: &str) -> Box<dyn DataPacket>;
-    fn add_parsed_data(&mut self, dp: Box<dyn DataPacket>);
-    fn next(&mut self) -> Option<Box<dyn DataPacket>>;
+    async fn next(&mut self) -> Option<Box<dyn DataPacket>>;
     fn set_id(&mut self, new_id: i32);
     fn get_id(&self) -> i32;
 }

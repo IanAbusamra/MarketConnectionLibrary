@@ -9,21 +9,23 @@ use crate::binance_exchange_listener::BinanceExchangeListener;
 use crate::data_packet::DataPacket;
 use crate::web_socket::WebSocket;
 use crate::exchange_listener::ExchangeListener;
+use tokio;
 
 static BINANCE_WS_API: &str = "wss://stream.binance.us:9443";
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let binance_url = format!("{}/ws/ethbtc@depth5@100ms", BINANCE_WS_API);
 
     let mut websocket = WebSocket::new(&binance_url);
     
     let mut binance_listener = BinanceExchangeListener::new(1, &mut websocket);
 
-    binance_listener.subscribe();
+    binance_listener.subscribe().await;
 
     let mut cnt = 0;
     loop {
-        let message = match binance_listener.get_subscription().receive() {
+        let message = match binance_listener.get_subscription().receive().await {
             Ok(Some(message)) => Some(message),
             Ok(None) => None,
             Err(e) => {
@@ -32,18 +34,17 @@ fn main() {
             }
         };
     
-        binance_listener.on_message(message.as_deref());
+        binance_listener.on_message(message.as_deref()).await;
     
-        if let Some(data_packet) = binance_listener.next() {
+        if let Some(data_packet) = binance_listener.next().await {
             println!("Received data: {}", data_packet.get_data());
             println!("Formatted version: Best Ask: {}, Best Ask Amount: {}", data_packet.get_best_ask(), data_packet.get_ask_amt());
         }
     
-        std::thread::sleep(std::time::Duration::from_millis(1000));
+        tokio::time::sleep(std::time::Duration::from_millis(1000)).await;
         cnt += 1;
         if cnt == 5 {
             break;
         }
     }
-    // binance_listener.close();
 }
