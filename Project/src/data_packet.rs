@@ -1,7 +1,4 @@
 pub struct DataPacket {
-    pub TempBestAsk: String,
-    pub TempAskAmt: String,
-    //change back to dataenum
     pub Data: DataEnum,
     pub Exchange: String,
     pub Channel: String,
@@ -10,16 +7,15 @@ pub struct DataPacket {
 ///////////////////////////////////////////////
 
 pub enum DataEnum {
-    M1(MessageType1),
+    BBABinanceData(BestBidAskDataBinance),
     M2(MessageType2),
 }
 
-pub struct MessageType1 {
-    pub data: String,
-    pub BestAsk: f64,
-    pub AskAmt: f64,
+pub struct BestBidAskDataBinance {
+    pub bestask: f64,
+    pub askamt: f64,
 }
 
 pub struct MessageType2 {
-    pub bestask: String,
+    pub placeholder: String,
 }

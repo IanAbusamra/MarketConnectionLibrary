@@ -9,13 +9,15 @@ use crate::binance_exchange_listener::BinanceExchangeListener;
 use crate::data_packet::DataPacket;
 use crate::web_socket::WebSocket;
 use crate::exchange_listener::ExchangeListener;
-use crate::data_packet::MessageType2;
+use crate::data_packet::DataEnum;
+use crate::data_packet::BestBidAskDataBinance;
 use tokio;
 
 static BINANCE_WS_API: &str = "wss://stream.binance.us:9443";
 
 #[tokio::main]
 async fn main() {
+    //will need to change this url depending upon what data we need
     let binance_url = format!("{}/ws/ethbtc@depth5@100ms", BINANCE_WS_API);
 
     let mut websocket = WebSocket::new(&binance_url);
@@ -38,16 +40,15 @@ async fn main() {
         binance_listener.on_message(message.as_deref()).await;
     
         if let Some(data_packet) = binance_listener.next().await {
-            //trying to actually access value from enum
-            // let mut testm2 = match data_packet.Data {
-            //     DataPacket::DataEnum::MessageType2(c) => c,
-            //     _ => unreachable!()
-            // };
-            //let testm2: MessageType2 = data_packet.Data;
-            //println!("{}", "testing");
-            println!("Exchange: {}", data_packet.Exchange);
-            println!("Channel: {}", data_packet.Channel);
-            println!("Best Ask: {}, Best Ask Amount: {}", data_packet.TempBestAsk, data_packet.TempAskAmt);
+            match data_packet.Data {
+                DataEnum::BBABinanceData(bba_data) => {
+                    let bestask_value = bba_data.bestask;
+                    println!("Best Ask: {}", bestask_value);
+                }
+                DataEnum::M2(_) => {
+                    println!("Placeholder");
+                }
+            }
         }
     
         tokio::time::sleep(std::time::Duration::from_millis(1000)).await;
