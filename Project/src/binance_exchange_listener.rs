@@ -6,6 +6,7 @@ use crate::data_packet::DataPacket;
 use crate::data_packet::DataEnum;
 use crate::data_packet::MessageType1;
 use crate::data_packet::MessageType2;
+use tokio_tungstenite::tungstenite::Error as TungsteniteError;
 
 pub struct BinanceExchangeListener<'a> {
     id: i32,
@@ -34,12 +35,21 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
         println!("Unsubscribed from Binance WebSocket");
     }
 
-    async fn on_message(&mut self, json: Option<&str>) {
-        if let Some(message) = json {
-            let _data_packet = self.parse_message(message);
-            // Maybe need to add more functionality with the parsed message
-        } else {
-            println!("No message received");
+    async fn poll(&mut self) -> Option<Box<DataPacket>> {
+        match self.subscription.receive().await {
+            Ok(Some(message)) => {
+                // Parse the message and return it
+                Some(Ok(self.parse_message(&message)))
+            },
+            Ok(None) => {
+                // No message available
+                None
+            },
+            Err(e) => {
+                // Error
+                eprintln!("Error receiving message: {:?}", e);
+                None
+            },
         }
     }
     
@@ -57,6 +67,17 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
         Box::new(test1)
     }
 
+    // No longer necessary
+    async fn on_message(&mut self, json: Option<&str>) {
+        if let Some(message) = json {
+            let _data_packet = self.parse_message(message);
+            // Maybe need to add more functionality with the parsed message
+        } else {
+            println!("No message received");
+        }
+    }
+
+    // No longer necessary
     async fn next(&mut self) -> Option<Box<DataPacket>> {
         match self.subscription.receive().await {
             Ok(Some(message)) => Some(self.parse_message(&message)),
