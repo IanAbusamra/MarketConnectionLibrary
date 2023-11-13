@@ -53,7 +53,6 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
     }
 
     fn parse_message(&self, message: &str) -> Box<DataPacket> {
-        //println!("{}", message);
         let parsed_data: serde_json::Value = serde_json::from_str(message).expect("Unable to parse message");
     
         let enum_creator = BestBidAskDataBTCBinance {
@@ -65,6 +64,7 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
             Data: DataEnum::BBABinanceBTCData(enum_creator),
             Exchange: String::from("Binance"),
             Channel: String::from("Channel 1"),
+            timestamp: parsed_data["timestamp"][0][1].as_str().expect("Issue parsing JSON").parse().unwrap(),
         };
         Box::new(ret)
     }
