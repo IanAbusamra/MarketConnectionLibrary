@@ -21,7 +21,7 @@ async fn main() {
     let binance_url = format!("{}/ws/ethbtc@depth1@100ms", BINANCE_WS_API);
 
     let mut websocket = WebSocket::new(&binance_url);
-    
+
     let mut binance_listener = BinanceExchangeListener::new(1, &mut websocket);
 
     binance_listener.subscribe().await;

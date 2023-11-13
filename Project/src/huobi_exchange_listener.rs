@@ -36,16 +36,19 @@ impl<'a> ExchangeListener for HuobiExchangeListener<'a> {
 
     fn parse_message(&self, message: &str) -> Box<DataPacket> {
         let parsed_data: serde_json::Value = serde_json::from_str(message).expect("Unable to parse message");
-        println!(message);
-        let enum_creator = BestBidAskDataBTCBinance {
-            bestask: parsed_data["asks"][0][0].as_str().expect("Issue parsing JSON").parse().unwrap(),
-            askamt: parsed_data["asks"][0][1].as_str().expect("Issue parsing JSON").parse().unwrap(),
+
+        let enum_creator = BestBidAskDataBTCHuobi {
+            bestask: parsed_data["tick"]["asks"][0][0].as_str().expect("Issue parsing JSON").parse().unwrap(),
+            askamt: parsed_data["tick"]["asks"][0][1].as_str().expect("Issue parsing JSON").parse().unwrap(),
+            bestbid: parsed_data["tick"]["bids"][0][0].as_str().expect("Issue parsing JSON").parse().unwrap(),
+            bidamt: parsed_data["tick"]["bids"][0][1].as_str().expect("Issue parsing JSON").parse().unwrap(),
         };
 
         let ret = DataPacket {
-            Data: DataEnum::BBABinanceBTCData(enum_creator),
-            Exchange: String::from("Binance"),
-            Channel: String::from("Channel 1"),
+            Data: DataEnum::BBAHuobiBTCData(enum_creator),
+            Exchange: String::from("Huobi"),
+            Channel: String::from("Channel 2"),
+            timestamp: parsed_data["ts"].as_str().expect("Issue parsing JSON").parse().unwrap()
         };
         Box::new(ret)
     }
