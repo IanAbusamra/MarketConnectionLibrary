@@ -5,7 +5,7 @@ use crate::web_socket::WebSocket;
 use crate::data_packet::DataPacket;
 use crate::data_packet::DataEnum;
 use tokio_tungstenite::tungstenite::Error as TungsteniteError;
-use crate::data_packet::BestBidAskDataBinance;
+use crate::data_packet::BestBidAskDataBTCBinance;
 
 pub struct BinanceExchangeListener<'a> {
     id: i32,
@@ -53,15 +53,16 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
     }
 
     fn parse_message(&self, message: &str) -> Box<DataPacket> {
+        //println!("{}", message);
         let parsed_data: serde_json::Value = serde_json::from_str(message).expect("Unable to parse message");
     
-        let enum_creator = BestBidAskDataBinance {
+        let enum_creator = BestBidAskDataBTCBinance {
             bestask: parsed_data["asks"][0][0].as_str().expect("Issue parsing JSON").parse().unwrap(),
             askamt: parsed_data["asks"][0][1].as_str().expect("Issue parsing JSON").parse().unwrap(),
         };
 
         let ret = DataPacket {
-            Data: DataEnum::BBABinanceData(enum_creator),
+            Data: DataEnum::BBABinanceBTCData(enum_creator),
             Exchange: String::from("Binance"),
             Channel: String::from("Channel 1"),
         };

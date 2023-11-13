@@ -7,15 +7,16 @@ pub struct DataPacket {
 ///////////////////////////////////////////////
 
 pub enum DataEnum {
-    BBABinanceData(BestBidAskDataBinance),
-    M2(MessageType2),
+    BBABinanceBTCData(BestBidAskDataBTCBinance),
+    BBABinanceETHData(BestBidAskDataETHBinance),
 }
 
-pub struct BestBidAskDataBinance {
+pub struct BestBidAskDataBTCBinance {
     pub bestask: f64,
     pub askamt: f64,
 }
 
-pub struct MessageType2 {
-    pub placeholder: String,
+pub struct BestBidAskDataETHBinance {
+    pub bestask: f64,
+    pub askamt: f64,
 }

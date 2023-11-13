@@ -10,7 +10,7 @@ use crate::data_packet::DataPacket;
 use crate::web_socket::WebSocket;
 use crate::exchange_listener::ExchangeListener;
 use crate::data_packet::DataEnum;
-use crate::data_packet::BestBidAskDataBinance;
+use crate::data_packet::BestBidAskDataBTCBinance;
 use tokio;
 
 static BINANCE_WS_API: &str = "wss://stream.binance.us:9443";
@@ -41,11 +41,11 @@ async fn main() {
     
         if let Some(data_packet) = binance_listener.next().await {
             match data_packet.Data {
-                DataEnum::BBABinanceData(bba_data) => {
+                DataEnum::BBABinanceBTCData(bba_data) => {
                     let bestask_value = bba_data.bestask;
                     println!("Best Ask: {}", bestask_value);
                 }
-                DataEnum::M2(_) => {
+                DataEnum::BBABinanceETHData(_) => {
                     println!("Placeholder");
                 }
             }
