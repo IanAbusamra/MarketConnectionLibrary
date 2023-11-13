@@ -64,7 +64,8 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
             Data: DataEnum::BBABinanceBTCData(enum_creator),
             Exchange: String::from("Binance"),
             Channel: String::from("Channel 1"),
-            timestamp: parsed_data["lastUpdateId"].as_str().expect("Issue parsing JSON").parse().unwrap(),
+            timestamp: 0,
+            //timestamp: parsed_data["lastUpdateId"].as_str().expect("Issue parsing JSON").parse().unwrap(),
         };
         Box::new(ret)
     }

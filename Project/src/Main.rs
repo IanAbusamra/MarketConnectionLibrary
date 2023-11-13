@@ -18,7 +18,7 @@ static BINANCE_WS_API: &str = "wss://stream.binance.us:9443";
 #[tokio::main]
 async fn main() {
     //will need to change this url depending upon what data we need
-    let binance_url = format!("{}/ws/ethbtc@depth1@100ms", BINANCE_WS_API);
+    let binance_url = format!("{}/ws/ethbtc@depth5@100ms", BINANCE_WS_API);
 
     let mut websocket = WebSocket::new(&binance_url);
 
