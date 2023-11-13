@@ -1,4 +1,6 @@
 pub struct DataPacket {
+    pub TempBestAsk: String,
+    pub TempAskAmt: String,
     //change back to dataenum
     pub Data: DataEnum,
     pub Exchange: String,

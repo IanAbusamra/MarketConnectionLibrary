@@ -60,9 +60,11 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
             bestask: parsed_data["asks"][0][0].as_str().expect("Issue parsing JSON").parse().unwrap(),
         };
         let test1 = DataPacket {
+            TempBestAsk: parsed_data["asks"][0][0].as_str().expect("Issue parsing JSON").parse().unwrap(),
+            TempAskAmt: parsed_data["asks"][0][1].as_str().expect("Issue parsing JSON").parse().unwrap(),
             Data: DataEnum::M2(enumtest1),
-            Exchange: String::from("huobi"),
-            Channel: String::from("test"),
+            Exchange: String::from("Binance"),
+            Channel: String::from("Example Channel"),
         };
         Box::new(test1)
     }

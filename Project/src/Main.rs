@@ -45,8 +45,9 @@ async fn main() {
             // };
             //let testm2: MessageType2 = data_packet.Data;
             //println!("{}", "testing");
-            println!("Received data: {}", data_packet.get_data());
-            println!("Formatted version: Best Ask: {}, Best Ask Amount: {}", data_packet.get_best_ask(), data_packet.get_ask_amt());
+            println!("Exchange: {}", data_packet.Exchange);
+            println!("Channel: {}", data_packet.Channel);
+            println!("Best Ask: {}, Best Ask Amount: {}", data_packet.TempBestAsk, data_packet.TempAskAmt);
         }
     
         tokio::time::sleep(std::time::Duration::from_millis(1000)).await;
