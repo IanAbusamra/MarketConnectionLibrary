@@ -44,34 +44,6 @@ fn main() {
                 println!("Received Ping: {:?}", ping_data);
                 socket.write_message(Message::Pong(ping_data)).expect("Error sending pong");
             },
-            Message::Binary(data) => {
-                println!("Received binary data: {:?}", data);
-
-                // Attempt to decompress the data using a GZIP decoder
-                let mut decoder = GzDecoder::new(&data[..]);
-                let mut decompressed_data = Vec::new();
-                match decoder.read_to_end(&mut decompressed_data) {
-                    Ok(_) => {
-                        // println!("Decompressed data: {:?}", decompressed_data);
-                        
-                        // Convert decompressed data to text
-                        let text = String::from_utf8(decompressed_data).expect("Found invalid UTF-8");
-                        println!("Decompressed text: {}", text);
-
-                        // Respond to pings
-                        if let Ok(parsed) = serde_json::from_str::<Value>(&text) {
-                            if let Some(ping) = parsed.get("ping") {
-                                let pong_response = json!({ "pong": ping }).to_string();
-                                socket.write_message(Message::Text(pong_response.clone())).expect("Failed to send pong");
-                                println!("Sent Pong response: {}", pong_response);
-                            }
-                        }
-                    },
-                    Err(e) => {
-                        println!("Failed to decompress GZIP data: {:?}", e);
-                    }
-                }
-            },
             Message::Text(text) => {
                 println!("Received text: {}", text);
                 // Handle text message.
