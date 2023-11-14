@@ -1,0 +1,11 @@
+# Ignore the target directory
+/target
+
+# Ignore backup files created by rustfmt
+**/*.rs.bk
+
+# Ignore IDE and editor specific files
+**/.idea
+**/*.swp
+**/*.swo
+.vscode/
