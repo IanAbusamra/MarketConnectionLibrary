@@ -1,4 +1,4 @@
-use tungstenite::{connect, Message};
+se tungstenite::{connect, Message};
 use url::Url;
 use flate2::read::GzDecoder;
 use std::io::Read;
