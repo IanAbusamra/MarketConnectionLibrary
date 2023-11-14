@@ -11,5 +11,4 @@ pub trait ExchangeListener {
     async fn next(&mut self) -> Option<Box<DataPacket>>;
     fn set_id(&mut self, new_id: i32);
     fn get_id(&self) -> i32;
-    async fn poll(&mut self) -> Option<Box<DataPacket>>;
 }

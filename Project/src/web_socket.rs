@@ -68,4 +68,8 @@ impl WebSocket {
         }
         Ok(())
     }    
+
+    pub fn get_mut_socket(&mut self) -> Option<&mut WebSocketStream<tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>>> {
+        self.socket.as_mut()
+    }
 }

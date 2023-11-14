@@ -34,24 +34,6 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
         println!("Unsubscribed from Binance WebSocket");
     }
 
-    async fn poll(&mut self) -> Option<Box<DataPacket>> {
-        match self.subscription.receive().await {
-            Ok(Some(message)) => {
-                // Parse the message and return it
-                Some(self.parse_message(&message))
-            },
-            Ok(None) => {
-                // No message available
-                None
-            },
-            Err(e) => {
-                // Error
-                eprintln!("Error receiving message: {:?}", e);
-                None
-            },
-        }
-    }
-
     fn parse_message(&self, message: &str) -> Box<DataPacket> {
         let parsed_data: serde_json::Value = serde_json::from_str(message).expect("Unable to parse message");
     

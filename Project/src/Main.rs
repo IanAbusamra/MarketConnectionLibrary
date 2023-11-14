@@ -11,6 +11,12 @@ use crate::web_socket::WebSocket;
 use crate::exchange_listener::ExchangeListener;
 use crate::data_packet::DataEnum;
 use crate::data_packet::BestBidAskDataBTCBinance;
+use futures::task::{Context, Poll};
+use futures::stream::Stream;
+use futures_util::stream::StreamExt; // Import the StreamExt trait
+use std::pin::Pin;
+use std::task::Waker;
+use tokio::time::{sleep, Duration};
 use tokio;
 
 static BINANCE_WS_API: &str = "wss://stream.binance.us:9443";
@@ -26,40 +32,48 @@ async fn main() {
 
     binance_listener.subscribe().await;
 
+    let waker = futures::task::noop_waker();
+    let mut cx = Context::from_waker(&waker);
+
     let mut cnt = 0;
     loop {
-        let message = match binance_listener.get_subscription().receive().await {
-            Ok(Some(message)) => Some(message),
-            Ok(None) => None,
-            Err(e) => {
-                println!("Error receiving message: {:?}", e);
-                None
+        if let Some(socket) = binance_listener.get_subscription().get_mut_socket() {
+            let mut socket = Pin::new(socket);
+            match socket.poll_next(&mut cx) {
+                Poll::Ready(Some(Ok(message))) => {
+                    binance_listener.on_message(Some(&message.to_string())).await;
+                    if let Some(data_packet) = binance_listener.next().await {
+                        match data_packet.Data {
+                            DataEnum::BBABinanceBTCData(bba_data) => {
+                                let bestask_value = bba_data.bestask;
+                                println!("Best Ask: {}", bestask_value);
+                            }
+                            DataEnum::BBABinanceETHData(_) => {
+                                println!("Placeholder");
+                            }
+                            DataEnum::BBAHuobiBTCData(_) => {
+                                println!("Placeholder");
+                            }
+                            DataEnum::BBAHuobiETHData(_) => {
+                                println!("Placeholder");
+                            }
+                        }
+                    }
+                },
+                Poll::Ready(Some(Err(e))) => {
+                    println!("Error receiving message: {:?}", e);
+                },
+                Poll::Ready(None) => break, 
+                Poll::Pending => println!("Waiting..."), // No message available
             }
-        };
-    
-        binance_listener.on_message(message.as_deref()).await;
-    
-        if let Some(data_packet) = binance_listener.next().await {
-            match data_packet.Data {
-                DataEnum::BBABinanceBTCData(bba_data) => {
-                    let bestask_value = bba_data.bestask;
-                    println!("Best Ask: {}", bestask_value);
-                }
-                DataEnum::BBABinanceETHData(_) => {
-                    println!("Placeholder");
-                }
-                DataEnum::BBAHuobiBTCData(_) => {
-                    println!("Placeholder");
-                }
-                DataEnum::BBAHuobiETHData(_) => {
-                    println!("Placeholder");
-                }
-            }
+        } else {
+            println!("WebSocket is not connected.");
+            break;
         }
-    
-        tokio::time::sleep(std::time::Duration::from_millis(1000)).await;
+
+        sleep(Duration::from_millis(1000)).await;
         cnt += 1;
-        if cnt == 5 {
+        if cnt == 10 {
             break;
         }
     }
