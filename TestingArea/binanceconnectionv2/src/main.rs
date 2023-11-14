@@ -9,7 +9,7 @@ use serde_json::{Value, json};
 // static HUOBI_WS_API: &str = "wss://api.huobi.pro/market.$BTC.bbo";
 //static HUOBI_WS_API: &str = "https://api.huobi.pro/market/history/kline?period=1day&size=200&symbol=btcusdt";
 // static HUOBI_WS_API: &str = "wss://api.huobi.pro/market.$BTC$.kline.$1min$";
-static BINANCE_WS_API: &str = "wss://stream.binance.us:9443/ws";
+static BINANCE_WS_API: &str = "wss://stream.binance.us:9443/ws/ethbtc@depth5@100ms";
 
 fn main() {
     let (mut socket, response) =
@@ -24,12 +24,14 @@ fn main() {
 
     // Subscribe to market depth for BTC/USDT with no aggregation
     let depth_subscription = json!({
-        "id": "51e2affb-0aba-4821-ba75-f2625006eb43",
-        "method": "depth",
-        "params": {
-          "symbol": "BNBBTC",
-          "limit": 5
-        }
+        
+            "method": "SUBSCRIBE",
+            "params":
+            [
+            "btcusdt@depth"
+            ],
+            "id": 1
+            
     }).to_string();
 
     socket.write_message(Message::Text(depth_subscription)).expect("Failed to subscribe to market depth");
