@@ -41,7 +41,6 @@ async fn main() {
             let mut socket = Pin::new(socket);
             match socket.poll_next(&mut cx) {
                 Poll::Ready(Some(Ok(message))) => {
-                    binance_listener.on_message(Some(&message.to_string())).await;
                     if let Some(data_packet) = binance_listener.next().await {
                         match data_packet.Data {
                             DataEnum::BBABinanceBTCData(bba_data) => {

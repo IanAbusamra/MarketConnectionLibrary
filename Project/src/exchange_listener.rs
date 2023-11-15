@@ -6,7 +6,6 @@ use std::option::Option;
 pub trait ExchangeListener {
     async fn subscribe(&mut self);
     async fn unsubscribe(&mut self);
-    async fn on_message(&mut self, json: Option<&str>);
     fn parse_message(&self, message: &str) -> Box<DataPacket>;
     async fn next(&mut self) -> Option<Box<DataPacket>>;
     fn set_id(&mut self, new_id: i32);

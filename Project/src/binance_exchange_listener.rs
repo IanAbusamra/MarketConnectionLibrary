@@ -53,16 +53,6 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
     }
 
     // No longer necessary
-    async fn on_message(&mut self, json: Option<&str>) {
-        if let Some(message) = json {
-            let _data_packet = self.parse_message(message);
-            // Maybe need to add more functionality with the parsed message
-        } else {
-            println!("No message received");
-        }
-    }
-
-    // No longer necessary
     async fn next(&mut self) -> Option<Box<DataPacket>> {
         match self.subscription.receive().await {
             Ok(Some(message)) => Some(self.parse_message(&message)),
