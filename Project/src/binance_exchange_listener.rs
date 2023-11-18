@@ -6,6 +6,10 @@ use crate::data_packet::*;
 use crate::data_packet::SymbolEnum::*;
 use crate::ExchangeEnum::*;
 use tokio_tungstenite::tungstenite::Error as TungsteniteError;
+use futures::task::{Context, Poll, noop_waker_ref};
+use std::pin::Pin;
+use tokio::time::{sleep, Duration};
+use futures_util::Stream;
 
 pub struct BinanceExchangeListener<'a> {
     id: i32,
@@ -52,6 +56,47 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
             timestamp: 0,
         };
         Box::new(ret)
+    }
+
+    async fn poll(&mut self) -> Option<()> {
+        let waker = noop_waker_ref();
+        let mut context = Context::from_waker(&waker);
+
+        if let Some(socket) = self.get_subscription().get_mut_socket() {
+            let mut socket = Pin::new(socket);
+
+            match socket.poll_next(&mut context) {
+                Poll::Ready(Some(Ok(message))) => {
+                    let data_packet = self.parse_message(&message.to_string());
+                    match data_packet.Data {
+                        DataEnum::MBP(bba_data) => {
+                            let bestask_value = bba_data.bestask;
+                            println!("Best Ask: {}", bestask_value);
+                        }
+                        DataEnum::RBA(_) => {
+                            println!("Received RBA data.");
+                        }
+                    }
+
+                    Some(())
+                },
+                Poll::Ready(Some(Err(e))) => {
+                    println!("Error receiving message: {:?}", e);
+                    None
+                },
+                Poll::Ready(None) => {
+                    println!("Socket closed.");
+                    None
+                },
+                Poll::Pending => {
+                    println!("Waiting...");
+                    None
+                }
+            }
+        } else {
+            println!("WebSocket is not connected.");
+            None
+        }
     }
 
     // No longer necessary

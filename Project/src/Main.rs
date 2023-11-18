@@ -16,10 +16,11 @@ use std::pin::Pin;
 use std::task::Waker;
 use tokio::time::{sleep, Duration};
 use tokio;
+use tokio::task::LocalSet;
 
 static BINANCE_WS_API: &str = "wss://stream.binance.us:9443";
 
-#[tokio::main]
+#[tokio::main(flavor = "current_thread")]
 async fn main() {
     //will need to change this url depending upon what data we need
     let binance_url = format!("{}/ws/ethbtc@depth5@100ms", BINANCE_WS_API);
@@ -30,38 +31,10 @@ async fn main() {
 
     binance_listener.subscribe().await;
 
-    let waker = futures::task::noop_waker();
-    let mut cx = Context::from_waker(&waker);
-
     let mut cnt = 0;
     loop {
-        if let Some(socket) = binance_listener.get_subscription().get_mut_socket() {
-            let mut socket = Pin::new(socket);
-            match socket.poll_next(&mut cx) {
-                Poll::Ready(Some(Ok(message))) => {
-                    if let Some(data_packet) = binance_listener.next().await {
-                        match data_packet.Data {
-                            DataEnum::MBP(bba_data) => {
-                                let bestask_value = bba_data.bestask;
-                                println!("Best Ask: {}", bestask_value);
-                            }
-                            DataEnum::RBA(_) => {
-                                println!("Placeholder");
-                            }
-                        }
-                    }
-                },
-                Poll::Ready(Some(Err(e))) => {
-                    println!("Error receiving message: {:?}", e);
-                },
-                Poll::Ready(None) => break, 
-                Poll::Pending => println!("Waiting..."), // No message available
-            }
-        } else {
-            println!("WebSocket is not connected.");
-            break;
-        }
-
+        binance_listener.poll().await;
+        
         sleep(Duration::from_millis(1000)).await;
         cnt += 1;
         if cnt == 10 {
