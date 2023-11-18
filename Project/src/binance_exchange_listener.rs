@@ -1,10 +1,9 @@
 use async_trait::async_trait;
 use crate::exchange_listener::ExchangeListener;
 use crate::web_socket::WebSocket;
-// use crate::data_packet::{DataPacket, ExchangeEnum, SymbolEnum, MarketIncremental, RefreshBidAsk, DataEnum, SymbolEnum};
 use crate::data_packet::*;
 use crate::data_packet::SymbolEnum::*;
-use crate::ExchangeEnum::*;
+use crate::data_packet::ExchangeEnum::*;
 use futures::task::{Context, Poll, noop_waker_ref};
 use std::pin::Pin;
 use futures_util::Stream;
@@ -47,10 +46,10 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
         };
 
         let ret = DataPacket {
-            Data: DataEnum::MBP(enum_creator),
-            Exchange: Binance,
-            SymbolPair: BTCUSD,
-            Channel: String::from("Channel 1"),
+            data: DataEnum::MBP(enum_creator),
+            exchange: Binance,
+            symbol_pair: BTCUSD,
+            channel: String::from("Channel 1"),
             timestamp: 0,
         };
         Box::new(ret)
@@ -66,7 +65,7 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
             match socket.poll_next(&mut context) {
                 Poll::Ready(Some(Ok(message))) => {
                     let data_packet = self.parse_message(&message.to_string());
-                    match data_packet.Data {
+                    match data_packet.data {
                         DataEnum::MBP(bba_data) => {
                             let bestask_value = bba_data.bestask;
                             println!("Best Ask: {}", bestask_value);

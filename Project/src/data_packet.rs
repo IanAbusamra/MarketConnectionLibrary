@@ -10,16 +10,16 @@ pub enum SymbolEnum {
 }
 
 pub struct DataPacket {
-    pub Data: DataEnum,
-    pub Exchange: ExchangeEnum,
-    pub SymbolPair: SymbolEnum,
-    pub Channel: String,
+    pub data: DataEnum,
+    pub exchange: ExchangeEnum,
+    pub symbol_pair: SymbolEnum,
+    pub channel: String,
     pub timestamp: i64,
 }
 
 pub enum DataEnum {
-    RBA(RefreshBidAsk),
     MBP(MarketIncremental),
+    RBA(RefreshBidAsk),
 }
 
 pub struct MarketIncremental {
