@@ -5,10 +5,8 @@ use crate::web_socket::WebSocket;
 use crate::data_packet::*;
 use crate::data_packet::SymbolEnum::*;
 use crate::ExchangeEnum::*;
-use tokio_tungstenite::tungstenite::Error as TungsteniteError;
 use futures::task::{Context, Poll, noop_waker_ref};
 use std::pin::Pin;
-use tokio::time::{sleep, Duration};
 use futures_util::Stream;
 
 pub struct BinanceExchangeListener<'a> {
@@ -63,7 +61,7 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
         let mut context = Context::from_waker(&waker);
 
         if let Some(socket) = self.get_subscription().get_mut_socket() {
-            let mut socket = Pin::new(socket);
+            let socket = Pin::new(socket);
 
             match socket.poll_next(&mut context) {
                 Poll::Ready(Some(Ok(message))) => {
@@ -96,18 +94,6 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
         } else {
             println!("WebSocket is not connected.");
             None
-        }
-    }
-
-    // No longer necessary
-    async fn next(&mut self) -> Option<Box<DataPacket>> {
-        match self.subscription.receive().await {
-            Ok(Some(message)) => Some(self.parse_message(&message)),
-            Ok(None) => None,
-            Err(e) => {
-                println!("Error receiving message: {:?}", e);
-                None
-            }
         }
     }
 

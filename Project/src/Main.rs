@@ -9,14 +9,8 @@ use crate::binance_exchange_listener::BinanceExchangeListener;
 use crate::data_packet::*;
 use crate::web_socket::WebSocket;
 use crate::exchange_listener::ExchangeListener;
-use futures::task::{Context, Poll};
-use futures::stream::Stream;
-use futures_util::stream::StreamExt; // Import the StreamExt trait
-use std::pin::Pin;
-use std::task::Waker;
 use tokio::time::{sleep, Duration};
 use tokio;
-use tokio::task::LocalSet;
 
 static BINANCE_WS_API: &str = "wss://stream.binance.us:9443";
 
