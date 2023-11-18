@@ -31,7 +31,7 @@ impl WebSocket {
         
         println!("Connected to the WebSocket server.");
         println!("HTTP status code: {}", response.status());
-        
+
         self.socket = Some(socket);
         Ok(())
     }

@@ -1,39 +1,35 @@
+//TODO: trade detail
+pub enum ExchangeEnum {
+    Huobi, 
+    Binance,
+}
+
+pub enum SymbolEnum {
+    BTCUSD,
+    ETHUSD,
+}
+
 pub struct DataPacket {
     pub Data: DataEnum,
-    pub Exchange: String,
+    pub Exchange: ExchangeEnum,
+    pub SymbolPair: SymbolEnum,
     pub Channel: String,
     pub timestamp: i64,
 }
 
-///////////////////////////////////////////////
-
 pub enum DataEnum {
-    BBABinanceBTCData(BestBidAskDataBTCBinance),
-    BBABinanceETHData(BestBidAskDataETHBinance),
-    BBAHuobiBTCData(BestBidAskDataBTCHuobi),
-    BBAHuobiETHData(BestBidAskDataETHHobi),
+    RBA(RefreshBidAsk),
+    MBP(MarketIncremental),
 }
 
-pub struct BestBidAskDataBTCBinance {
+pub struct MarketIncremental {
     pub bestask: f64,
-    pub askamt: f64,
-}
-
-pub struct BestBidAskDataETHBinance {
-    pub bestask: f64,
-    pub askamt: f64,
-}
-
-pub struct BestBidAskDataBTCHuobi {
-    pub bestask: f64,
-    pub askamt: f64,
+    pub askamount: f64,
     pub bestbid: f64,
-    pub bidamt: f64,
+    pub bidamount: f64,
 }
 
-pub struct BestBidAskDataETHHobi {
-    pub bestask: f64,
-    pub askamt: f64,
-    pub bestbid: f64,
-    pub bidamt: f64,
+pub struct RefreshBidAsk {
+    pub asks: Vec<(f64, f64)>, //price, amount
+    pub bids: Vec<(f64, f64)>, //price, amount
 }

@@ -1,11 +1,11 @@
 use async_trait::async_trait;
 use crate::exchange_listener::ExchangeListener;
-//use crate::market_data::MarketData;
 use crate::web_socket::WebSocket;
-use crate::data_packet::DataPacket;
-use crate::data_packet::DataEnum;
+// use crate::data_packet::{DataPacket, ExchangeEnum, SymbolEnum, MarketIncremental, RefreshBidAsk, DataEnum, SymbolEnum};
+use crate::data_packet::*;
+use crate::data_packet::SymbolEnum::*;
+use crate::ExchangeEnum::*;
 use tokio_tungstenite::tungstenite::Error as TungsteniteError;
-use crate::data_packet::BestBidAskDataBTCBinance;
 
 pub struct BinanceExchangeListener<'a> {
     id: i32,
@@ -37,17 +37,19 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
     fn parse_message(&self, message: &str) -> Box<DataPacket> {
         let parsed_data: serde_json::Value = serde_json::from_str(message).expect("Unable to parse message");
     
-        let enum_creator = BestBidAskDataBTCBinance {
+        let enum_creator = MarketIncremental {
             bestask: parsed_data["asks"][0][0].as_str().expect("Issue parsing JSON").parse().unwrap(),
-            askamt: parsed_data["asks"][0][1].as_str().expect("Issue parsing JSON").parse().unwrap(),
+            askamount: parsed_data["asks"][0][1].as_str().expect("Issue parsing JSON").parse().unwrap(),
+            bestbid: 0.0,
+            bidamount: 0.0, //just for testing
         };
 
         let ret = DataPacket {
-            Data: DataEnum::BBABinanceBTCData(enum_creator),
-            Exchange: String::from("Binance"),
+            Data: DataEnum::MBP(enum_creator),
+            Exchange: Binance,
+            SymbolPair: BTCUSD,
             Channel: String::from("Channel 1"),
             timestamp: 0,
-            //timestamp: parsed_data["lastUpdateId"].as_str().expect("Issue parsing JSON").parse().unwrap(),
         };
         Box::new(ret)
     }

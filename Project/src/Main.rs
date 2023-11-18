@@ -6,11 +6,9 @@ mod web_socket;
 mod exchange_listener;
 
 use crate::binance_exchange_listener::BinanceExchangeListener;
-use crate::data_packet::DataPacket;
+use crate::data_packet::*;
 use crate::web_socket::WebSocket;
 use crate::exchange_listener::ExchangeListener;
-use crate::data_packet::DataEnum;
-use crate::data_packet::BestBidAskDataBTCBinance;
 use futures::task::{Context, Poll};
 use futures::stream::Stream;
 use futures_util::stream::StreamExt; // Import the StreamExt trait
@@ -43,17 +41,11 @@ async fn main() {
                 Poll::Ready(Some(Ok(message))) => {
                     if let Some(data_packet) = binance_listener.next().await {
                         match data_packet.Data {
-                            DataEnum::BBABinanceBTCData(bba_data) => {
+                            DataEnum::MBP(bba_data) => {
                                 let bestask_value = bba_data.bestask;
                                 println!("Best Ask: {}", bestask_value);
                             }
-                            DataEnum::BBABinanceETHData(_) => {
-                                println!("Placeholder");
-                            }
-                            DataEnum::BBAHuobiBTCData(_) => {
-                                println!("Placeholder");
-                            }
-                            DataEnum::BBAHuobiETHData(_) => {
+                            DataEnum::RBA(_) => {
                                 println!("Placeholder");
                             }
                         }
