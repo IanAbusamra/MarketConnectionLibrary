@@ -1,7 +1,5 @@
 mod binance_exchange_listener;
 mod data_packet;
-mod market_data;
-mod trade_data;
 mod web_socket;
 mod exchange_listener;
 

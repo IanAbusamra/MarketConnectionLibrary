@@ -1,1 +1,0 @@
-C:\Users\Owner\Desktop\MarketConnectionLibrary\TestingArea\binanceconnectionv2\target\debug\binanceconnectionv2.exe: C:\Users\Owner\Desktop\MarketConnectionLibrary\TestingArea\binanceconnectionv2\src\main.rs
