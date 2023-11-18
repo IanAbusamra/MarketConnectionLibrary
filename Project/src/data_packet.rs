@@ -1,4 +1,4 @@
-//TODO: trade detail
+///TODO: trade detail
 pub enum ExchangeEnum {
     Huobi, 
     Binance,
