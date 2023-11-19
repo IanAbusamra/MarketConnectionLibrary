@@ -45,6 +45,15 @@ impl WebSocket {
         Ok(())
     }
 
+    pub async fn send_ping(&mut self) -> Result<(), TungsteniteError> {
+        if let Some(socket) = &mut self.socket {
+            socket.send(Message::Ping(Vec::new())).await?;
+        } else {
+            println!("Socket is not connected.");
+        }
+        Ok(())
+    }
+
     pub async fn receive(&mut self) -> Result<Option<String>, TungsteniteError> {
         if let Some(socket) = self.socket.as_mut() {
             match socket.next().await {

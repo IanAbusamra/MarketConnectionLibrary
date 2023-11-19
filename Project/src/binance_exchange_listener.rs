@@ -11,11 +11,12 @@ use futures_util::Stream;
 pub struct BinanceExchangeListener<'a> {
     id: i32,
     subscription: &'a mut WebSocket,
+    poll_counter: u32,
 }
 
 impl<'a> BinanceExchangeListener<'a> {
     pub fn new(id: i32, subscription: &'a mut WebSocket) -> Self {
-        BinanceExchangeListener { id, subscription }
+        BinanceExchangeListener { id, subscription, poll_counter: 0, }
     }
 
     pub fn get_subscription(&mut self) -> &mut WebSocket {
@@ -58,6 +59,12 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
     async fn poll(&mut self) -> Option<()> {
         let waker = noop_waker_ref();
         let mut context = Context::from_waker(&waker);
+
+        self.poll_counter += 1;
+
+        if self.poll_counter % 50 == 0 {
+            self.subscription.send_ping();
+        }
 
         if let Some(socket) = self.get_subscription().get_mut_socket() {
             let socket = Pin::new(socket);
