@@ -384,6 +384,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b5e6163cb8c49088c2c36f57875e58ccd8c87c7427f7fbd50ea6710b2f3f2e8f"
 
 [[package]]
+name = "market_connection_library"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "futures",
+ "futures-util",
+ "queues",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-tungstenite",
+ "tungstenite",
+ "url",
+]
+
+[[package]]
 name = "memchr"
 version = "2.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -556,22 +572,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "134c189feb4956b20f6f547d2cf727d4c0fe06722b20a0eec87ed445a97f92da"
 dependencies = [
  "unicode-ident",
-]
-
-[[package]]
-name = "project"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "futures",
- "futures-util",
- "queues",
- "serde",
- "serde_json",
- "tokio",
- "tokio-tungstenite",
- "tungstenite",
- "url",
 ]
 
 [[package]]
