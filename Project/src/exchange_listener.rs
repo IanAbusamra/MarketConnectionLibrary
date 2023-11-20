@@ -9,5 +9,5 @@ pub trait ExchangeListener {
     fn parse_message(&self, message: &str) -> Box<DataPacket>;
     fn set_id(&mut self, new_id: i32);
     fn get_id(&self) -> i32;
-    async fn poll(&mut self) -> Option<()>;
+    fn poll(&mut self) -> Option<()>;
 }
