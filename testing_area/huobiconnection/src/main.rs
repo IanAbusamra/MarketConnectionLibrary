@@ -67,7 +67,7 @@ fn main() {
                 }
             },
             Message::Text(text) => {
-                println!("Received text: {}", text);
+                print!("Received text: {}", text);
                 // Handle text message.
             },
             _ => {
