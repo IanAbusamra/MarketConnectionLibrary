@@ -1,1 +1,1 @@
-C:\Users\Owner\Desktop\MarketConnectionLibrary\TestingArea\huobiconnection\target\debug\huobiconnection.exe: C:\Users\Owner\Desktop\MarketConnectionLibrary\TestingArea\huobiconnection\src\main.rs
+C:\Users\Owner\Desktop\MarketConnectionLibrary\testing_area\huobiconnection\target\debug\huobiconnection.exe: C:\Users\Owner\Desktop\MarketConnectionLibrary\testing_area\huobiconnection\src\main.rs

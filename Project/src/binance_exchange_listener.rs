@@ -7,10 +7,15 @@ use crate::data_packet::ExchangeEnum::*;
 use futures::task::{Context, Poll, noop_waker_ref};
 use std::pin::Pin;
 use futures_util::Stream;
+use flate2::read::GzDecoder;
+use tungstenite::Message;
+use std::io::Read;
+use serde_json::json;
+use serde_json::Value;
 
 pub struct BinanceExchangeListener<'a> {
-    id: i32,
-    subscription: &'a mut WebSocket,
+    pub id: i32,
+    pub subscription: &'a mut WebSocket,
 }
 
 impl<'a> BinanceExchangeListener<'a> {
@@ -63,15 +68,57 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
             let socket = Pin::new(socket);
 
             match socket.poll_next(&mut context) {
-                Poll::Ready(Some(Ok(message))) => {
-                    let data_packet = self.parse_message(&message.to_string());
-                    match data_packet.data {
-                        DataEnum::MBP(bba_data) => {
-                            let bestask_value = bba_data.bestask;
-                            println!("Best Ask: {}", bestask_value);
-                        }
-                        DataEnum::RBA(_) => {
-                            println!("Received RBA data.");
+                // Poll::Ready(Message::Ping(ping_data)) => {
+                //     println!("Received Ping: {:?}", ping_data);
+                //     socket.send(Message::Pong(ping_data)).expect("Error sending pong");
+                //     println!("Response pong sent");
+                //     Some(())
+                // },
+                Poll::Ready(Some(Ok(msg))) => {
+                    match msg {
+                        Message::Ping(ping_data) => {
+                            println!("Ping branch Reached");
+                            // println!("Received Ping: {:?}", ping_data);
+                            // socket.write_message(Message::Pong(ping_data)).expect("Error sending pong");
+                        },
+                        Message::Binary(data) => {
+                            println!("Binary branch reached!!!!");
+                            println!("Received binary data: {:?}", data);
+            
+                            // Attempt to decompress the data using a GZIP decoder
+                            let mut decoder = GzDecoder::new(&data[..]);
+                            let mut decompressed_data = Vec::new();
+                            match decoder.read_to_end(&mut decompressed_data) {
+                                Ok(_) => {
+                                    println!("WE HAVE DECOMPRESSED THE DATA");
+                                    // println!("Decompressed data: {:?}", decompressed_data);
+                                    
+                                    // Convert decompressed data to text
+                                    let text = String::from_utf8(decompressed_data).expect("Found invalid UTF-8");
+                                    println!("Decompressed text: {}", text);
+            
+                                    // Respond to pings
+                                    if let Ok(parsed) = serde_json::from_str::<Value>(&text) {
+                                        if let Some(ping) = parsed.get("ping") {
+                                            let pong_response = json!({ "pong": ping }).to_string();
+                                            //self.subscription.send("").expect("Failed to send pong");
+                                            self.subscription.send(&pong_response);
+                                            println!("Sent Pong response: {}", pong_response);
+                                        }
+                                    }
+                                },
+                                Err(e) => {
+                                    println!("Failed to decompress GZIP data: {:?}", e);
+                                }
+                            }
+                        },
+                        Message::Text(text) => {
+                            println!("text branch reached");
+                            println!("Received text: {}", text);
+                            // Handle text message.
+                        },
+                        _ => {
+                            // Handle other message types
                         }
                     }
 
