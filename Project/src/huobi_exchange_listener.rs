@@ -46,9 +46,29 @@ impl<'a> ExchangeListener for HuobiExchangeListener<'a> {
     fn parse_message(&self, message: &str) -> Box<DataPacket> {
         let parsed_data: serde_json::Value = serde_json::from_str(message).expect("Unable to parse message");
     
-        let ask_vector: Vec<(f64, f64)> = Vec::new();
-        let bid_vector: Vec<(f64, f64)> = Vec::new();
+        let mut ask_vector: Vec<(f64, f64)> = Vec::new();
+        let mut bid_vector: Vec<(f64, f64)> = Vec::new();
     
+        for i in 0..20 {
+            let ask_price: Option<f64> = parsed_data["tick"]["asks"][i][0].as_f64();
+            let ask_quantity: Option<f64> = parsed_data["tick"]["asks"][i][1].as_f64();
+            let bid_price: Option<f64> = parsed_data["tick"]["bids"][i][0].as_f64();
+            let bid_quantity: Option<f64> = parsed_data["tick"]["bids"][i][1].as_f64();
+
+            //TODO: not unwrapping correctly always going to default value
+            let ask_pair: (f64, f64) = (
+                ask_price.unwrap_or_default(),
+                ask_quantity.unwrap_or_default(),
+            );
+
+            let bid_pair: (f64, f64) = (
+                bid_price.unwrap_or_default(),
+                bid_quantity.unwrap_or_default(),
+            );
+
+            ask_vector.push(ask_pair);
+            bid_vector.push(bid_pair);
+        }
 
         let enum_creator = MarketIncremental {
             asks: ask_vector,
@@ -95,6 +115,7 @@ impl<'a> ExchangeListener for HuobiExchangeListener<'a> {
                                     // Convert decompressed data to text
                                     let text = String::from_utf8(decompressed_data).expect("Found invalid UTF-8");
                                     println!("Decompressed text: {}", text);
+                                    let dpp = self.parse_message(&text);
             
                                     // Respond to pings
                                     if let Ok(parsed) = serde_json::from_str::<Value>(&text) {

@@ -45,6 +45,7 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
     
         let mut ask_vector: Vec<(f64, f64)> = Vec::new();
         let mut bid_vector: Vec<(f64, f64)> = Vec::new();
+        println!("{}", parsed_data["asks"][0][0]);
 
         for i in 0..5 {
             let ask_price: Option<f64> = parsed_data["asks"][i][0].as_f64();
@@ -52,6 +53,7 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
             let bid_price: Option<f64> = parsed_data["bids"][i][0].as_f64();
             let bid_quantity: Option<f64> = parsed_data["bids"][i][1].as_f64();
 
+            //TODO: not unwrapping correctly always going to default value
             let ask_pair: (f64, f64) = (
                 ask_price.unwrap_or_default(),
                 ask_quantity.unwrap_or_default(),
