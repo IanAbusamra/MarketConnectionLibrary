@@ -47,8 +47,8 @@ impl<'a> ExchangeListener for HuobiExchangeListener<'a> {
         let parsed_data: serde_json::Value = serde_json::from_str(message).expect("Unable to parse message");
     
         let enum_creator = MarketIncremental {
-            bestask: parsed_data["asks"][0][0].as_str().expect("Issue parsing JSON").parse().unwrap(),
-            askamount: parsed_data["asks"][0][1].as_str().expect("Issue parsing JSON").parse().unwrap(),
+            bestask: 0.0,
+            askamount: 0.0,
             bestbid: 0.0,
             bidamount: 0.0, //just for testing
         };

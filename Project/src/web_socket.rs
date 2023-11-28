@@ -38,6 +38,7 @@ impl WebSocket {
 
     pub async fn send(&mut self, message: &str) -> Result<(), TungsteniteError> {
         if let Some(socket) = &mut self.socket {
+            println!("MESSSAGAESOIFNSOFNSDIVUSDH VPSIDUV ");
             socket.send(Message::Text(message.to_string())).await?;
         } else {
             println!("Socket is not connected.");
