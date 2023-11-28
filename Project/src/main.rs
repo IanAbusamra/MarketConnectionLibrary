@@ -32,7 +32,6 @@ async fn main() {
     let mut cnt = 0;
     loop {
         binance_listener.poll();
-        
         sleep(Duration::from_millis(1000)).await;
         cnt += 1;
         if cnt == 10 {

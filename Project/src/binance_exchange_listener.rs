@@ -41,18 +41,28 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
     }
 
     fn parse_message(&self, message: &str) -> Box<DataPacket> {
-        let parsed_data: serde_json::Value = serde_json::from_str(message).expect("Unable to parse message");
+        let parsed_data: serde_json::Value = serde_json::from_str(&message).expect("Unable to parse message");
     
         let mut ask_vector: Vec<(f64, f64)> = Vec::new();
         let mut bid_vector: Vec<(f64, f64)> = Vec::new();
 
         for i in 0..5 {
-            let ask_pair: (f64, f64) = (parsed_data["asks"][i][0].as_str().expect("Issue parsing JSON").parse().unwrap(), 
-                parsed_data["asks"][i][1].as_str().expect("Issue parsing JSON").parse().unwrap());
-            ask_vector.push(ask_pair);
+            let ask_price: Option<f64> = parsed_data["asks"][i][0].as_f64();
+            let ask_quantity: Option<f64> = parsed_data["asks"][i][1].as_f64();
+            let bid_price: Option<f64> = parsed_data["bids"][i][0].as_f64();
+            let bid_quantity: Option<f64> = parsed_data["bids"][i][1].as_f64();
 
-            let bid_pair: (f64, f64) = (parsed_data["bids"][i][0].as_str().expect("Issue parsing JSON").parse().unwrap(), 
-                parsed_data["bids"][i][1].as_str().expect("Issue parsing JSON").parse().unwrap());
+            let ask_pair: (f64, f64) = (
+                ask_price.unwrap_or_default(),
+                ask_quantity.unwrap_or_default(),
+            );
+
+            let bid_pair: (f64, f64) = (
+                bid_price.unwrap_or_default(),
+                bid_quantity.unwrap_or_default(),
+            );
+
+            ask_vector.push(ask_pair);
             bid_vector.push(bid_pair);
         }
 
@@ -83,8 +93,8 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
                     let data_packet = self.parse_message(&message.to_string());
                     match data_packet.data {
                         DataEnum::MBP(bba_data) => {
-                            // let bestask_value = bba_data.bestask;
-                            // println!("Best Ask: {}", bestask_value);
+                            let asks_vector = bba_data.asks;
+                            println!("{:?}", asks_vector);
                         }
                         DataEnum::RBA(_) => {
                             println!("Received RBA data.");
