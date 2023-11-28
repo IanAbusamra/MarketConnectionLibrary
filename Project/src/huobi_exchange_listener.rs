@@ -46,11 +46,13 @@ impl<'a> ExchangeListener for HuobiExchangeListener<'a> {
     fn parse_message(&self, message: &str) -> Box<DataPacket> {
         let parsed_data: serde_json::Value = serde_json::from_str(message).expect("Unable to parse message");
     
+        let ask_vector: Vec<(f64, f64)> = Vec::new();
+        let bid_vector: Vec<(f64, f64)> = Vec::new();
+    
+
         let enum_creator = MarketIncremental {
-            bestask: 0.0,
-            askamount: 0.0,
-            bestbid: 0.0,
-            bidamount: 0.0, //just for testing
+            asks: ask_vector,
+            bids: bid_vector,
         };
 
         let ret = DataPacket {

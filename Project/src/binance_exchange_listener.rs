@@ -43,11 +43,22 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
     fn parse_message(&self, message: &str) -> Box<DataPacket> {
         let parsed_data: serde_json::Value = serde_json::from_str(message).expect("Unable to parse message");
     
+        let mut ask_vector: Vec<(f64, f64)> = Vec::new();
+        let mut bid_vector: Vec<(f64, f64)> = Vec::new();
+
+        for i in 0..5 {
+            let ask_pair: (f64, f64) = (parsed_data["asks"][i][0].as_str().expect("Issue parsing JSON").parse().unwrap(), 
+                parsed_data["asks"][i][1].as_str().expect("Issue parsing JSON").parse().unwrap());
+            ask_vector.push(ask_pair);
+
+            let bid_pair: (f64, f64) = (parsed_data["bids"][i][0].as_str().expect("Issue parsing JSON").parse().unwrap(), 
+                parsed_data["bids"][i][1].as_str().expect("Issue parsing JSON").parse().unwrap());
+            bid_vector.push(bid_pair);
+        }
+
         let enum_creator = MarketIncremental {
-            bestask: parsed_data["asks"][0][0].as_str().expect("Issue parsing JSON").parse().unwrap(),
-            askamount: parsed_data["asks"][0][1].as_str().expect("Issue parsing JSON").parse().unwrap(),
-            bestbid: 0.0,
-            bidamount: 0.0, //just for testing
+            asks: ask_vector,
+            bids: bid_vector,
         };
 
         let ret = DataPacket {
@@ -68,11 +79,12 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
 
             match socket.poll_next(&mut context) {
                 Poll::Ready(Some(Ok(message))) => {
+                    println!("{}", message);
                     let data_packet = self.parse_message(&message.to_string());
                     match data_packet.data {
                         DataEnum::MBP(bba_data) => {
-                            let bestask_value = bba_data.bestask;
-                            println!("Best Ask: {}", bestask_value);
+                            // let bestask_value = bba_data.bestask;
+                            // println!("Best Ask: {}", bestask_value);
                         }
                         DataEnum::RBA(_) => {
                             println!("Received RBA data.");

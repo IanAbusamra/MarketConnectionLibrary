@@ -23,11 +23,16 @@ pub enum DataEnum {
 }
 
 pub struct MarketIncremental {
-    pub bestask: f64,
-    pub askamount: f64,
-    pub bestbid: f64,
-    pub bidamount: f64,
+    pub asks: Vec<(f64, f64)>,
+    pub bids: Vec<(f64, f64)>,
 }
+
+// pub struct MarketIncremental {
+//     pub bestask: f64,
+//     pub askamount: f64,
+//     pub bestbid: f64,
+//     pub bidamount: f64,
+// }
 
 pub struct RefreshBidAsk {
     pub asks: Vec<(f64, f64)>, //price, amount

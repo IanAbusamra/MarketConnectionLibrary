@@ -19,8 +19,7 @@ static HUOBI_WS_API: &str = "wss://api.huobi.pro/ws";
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() {
-
-    /* 
+ 
     //will need to change this url depending upon what data we need
     let binance_url = format!("{}/ws/ethbtc@depth5@100ms", BINANCE_WS_API);
 
@@ -40,15 +39,16 @@ async fn main() {
             break;
         }
     }
-    */
+    
 
-
+    /*
     let huobi_url = format!("{}", HUOBI_WS_API);
 
     let mut huobi_websocket = WebSocket::new(&huobi_url);
 
     let depth_subscription = json!({
-        "sub": "market.btcusdt.mbp.refresh.20",
+        //"sub": "market.btcusdt.mbp.refresh.20",
+        "sub": "market.btcusdt.mbp.5",
         "id": "id1"
     }).to_string();
 
@@ -65,5 +65,5 @@ async fn main() {
         
         sleep(Duration::from_millis(1)).await;
     }
-
+    */
 }
