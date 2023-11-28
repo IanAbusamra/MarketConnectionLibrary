@@ -64,10 +64,6 @@ async fn main() {
         huobi_listener.poll();
         
         sleep(Duration::from_millis(1)).await;
-        cnt += 1;
-        if cnt == 10 {
-           // break;
-        }
     }
 
 }

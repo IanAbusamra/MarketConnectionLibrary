@@ -36,25 +36,14 @@ impl WebSocket {
         Ok(())
     }
 
-    pub fn send(&mut self, message: &str) -> Result<(), TungsteniteError> {
-        println!("in the function");
+    pub async fn send(&mut self, message: &str) -> Result<(), TungsteniteError> {
         if let Some(socket) = &mut self.socket {
-            socket.send(Message::Text(message.to_string()));
-            println!("SENT MESSAGE SUCCESSFULLY");
+            socket.send(Message::Text(message.to_string())).await?;
         } else {
             println!("Socket is not connected.");
         }
         Ok(())
     }
-
-    // pub async fn send(&mut self, message: &str) -> Result<(), TungsteniteError> {
-    //     if let Some(socket) = &mut self.socket {
-    //         socket.send(Message::Text(message.to_string())).await?;
-    //     } else {
-    //         println!("Socket is not connected.");
-    //     }
-    //     Ok(())
-    // }
 
     pub async fn send_ping(&mut self) -> Result<(), TungsteniteError> {
         if let Some(socket) = &mut self.socket {
