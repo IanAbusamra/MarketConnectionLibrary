@@ -1,1 +1,0 @@
-C:\Users\Owner\Desktop\MarketConnectionLibrary\TestingArea\BinanceConnection\target\debug\TungsteniteTesting.exe: C:\Users\Owner\Desktop\MarketConnectionLibrary\TestingArea\BinanceConnection\src\main.rs
