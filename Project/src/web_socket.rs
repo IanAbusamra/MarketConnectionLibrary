@@ -10,6 +10,10 @@ pub struct WebSocket {
 }
 
 impl WebSocket {
+    /// Creates a new WebSocket instance.
+    ///
+    /// # Arguments
+    /// * `url` - A string that holds the URL of the WebSocket server.
     pub fn new(url: &str) -> Self {
         WebSocket {
             url: url.to_string(),
@@ -17,6 +21,10 @@ impl WebSocket {
         }
     }
 
+    /// Asynchronously establishes a WebSocket connection.
+    ///
+    /// # Returns
+    /// A result indicating success (`Ok`) or containing a `TungsteniteError` on failure.
     pub async fn connect(&mut self) -> Result<(), TungsteniteError> {
         let url_result = Url::parse(&self.url);
         let url = match url_result {
@@ -36,6 +44,13 @@ impl WebSocket {
         Ok(())
     }
 
+    /// Sends a message over the WebSocket connection.
+    ///
+    /// # Arguments
+    /// * `message` - A string representing the message to be sent.
+    ///
+    /// # Returns
+    /// A result with success (`Ok`) or `TungsteniteError` on failure.
     pub async fn send(&mut self, message: &str) -> Result<(), TungsteniteError> {
         if let Some(socket) = &mut self.socket {
             println!("Sent Message");
@@ -46,6 +61,10 @@ impl WebSocket {
         Ok(())
     }
 
+    /// Sends a ping message over the WebSocket connection.
+    ///
+    /// # Returns
+    /// A result with success (`Ok`) or `TungsteniteError` on failure.
     pub async fn send_ping(&mut self) -> Result<(), TungsteniteError> {
         if let Some(socket) = &mut self.socket {
             socket.send(Message::Ping(Vec::new())).await?;
@@ -55,6 +74,10 @@ impl WebSocket {
         Ok(())
     }
 
+    /// Receives a message from the WebSocket connection.
+    ///
+    /// # Returns
+    /// A result with `Option<String>` or a `TungsteniteError` on failure.
     pub async fn receive(&mut self) -> Result<Option<String>, TungsteniteError> {
         if let Some(socket) = self.socket.as_mut() {
             match socket.next().await {
@@ -72,6 +95,10 @@ impl WebSocket {
         }
     }
 
+    /// Closes the WebSocket connection.
+    ///
+    /// # Returns
+    /// A result with success (`Ok`) or `TungsteniteError` on failure.
     pub async fn close(&mut self) -> Result<(), TungsteniteError> {
         if let Some(mut socket) = self.socket.take() {
             socket.close(None).await?;
@@ -79,6 +106,10 @@ impl WebSocket {
         Ok(())
     }    
 
+    /// Provides mutable access to the WebSocket stream.
+    ///
+    /// # Returns
+    /// An `Option` containing a mutable reference to `WebSocketStream` if it exists.
     pub fn get_mut_socket(&mut self) -> Option<&mut WebSocketStream<tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>>> {
         self.socket.as_mut()
     }
