@@ -1,15 +1,15 @@
 mod data_packet;
-mod exchange_listener;
 mod web_socket;
 
-mod binance_exchange_listener;
-mod huobi_exchange_listener;
-
-// USE
+mod exchange_listener {
+    pub mod exchange_listener;
+    pub mod binance_exchange_listener;
+    pub mod huobi_exchange_listener;
+}
 
 pub use data_packet::DataPacket;
-pub use exchange_listener::ExchangeListener;
 pub use web_socket::WebSocket;
 
-pub use binance_exchange_listener::BinanceExchangeListener;
-pub use huobi_exchange_listener::HuobiExchangeListener;
+pub use exchange_listener::exchange_listener::ExchangeListener;
+pub use exchange_listener::binance_exchange_listener::BinanceExchangeListener;
+pub use exchange_listener::huobi_exchange_listener::HuobiExchangeListener;

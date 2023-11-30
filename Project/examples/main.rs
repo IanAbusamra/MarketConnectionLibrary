@@ -1,6 +1,6 @@
 use market_connection::ExchangeListener;
 use market_connection::HuobiExchangeListener;
-
+use market_connection::BinanceExchangeListener;
 use market_connection::WebSocket;
 use serde_json::json;
 
@@ -57,6 +57,6 @@ async fn main() {
     loop {
         huobi_listener.poll();
 
-        sleep(Duration::from_millis(1)).await;
+        sleep(Duration::from_millis(1000)).await;
     }
 }
