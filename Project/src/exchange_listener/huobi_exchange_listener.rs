@@ -8,13 +8,9 @@ use futures::task::{Context, Poll, noop_waker_ref};
 use std::pin::Pin;
 use futures_util::Stream;
 use flate2::read::GzDecoder;
-use tokio_tungstenite::{WebSocketStream, connect_async, MaybeTlsStream};
-use tokio_tungstenite::tungstenite::{Message, error::Error as TungsteniteError};
-use tokio::net::TcpStream;
-use futures_util::{StreamExt, SinkExt};
-use std::io::Read; // Needed for `read_to_end` method
-use serde_json::{Value, json}; // Importing `Value` and `json!` macro
-use tokio::runtime::Runtime;
+use tokio_tungstenite::tungstenite::{Message};
+use std::io::Read;
+use serde_json::{Value, json};
 
 pub struct HuobiExchangeListener<'a> {
     id: i32,

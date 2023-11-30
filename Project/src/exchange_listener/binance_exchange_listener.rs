@@ -7,11 +7,6 @@ use crate::data_packet::ExchangeEnum::*;
 use futures::task::{Context, Poll, noop_waker_ref};
 use std::pin::Pin;
 use futures_util::Stream;
-use flate2::read::GzDecoder;
-use tungstenite::Message;
-use std::io::Read;
-use serde_json::json;
-use serde_json::Value;
 
 pub struct BinanceExchangeListener<'a> {
     pub id: i32,
