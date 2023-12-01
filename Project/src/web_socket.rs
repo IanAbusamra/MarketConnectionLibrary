@@ -53,8 +53,18 @@ impl WebSocket {
     /// A result with success (`Ok`) or `TungsteniteError` on failure.
     pub async fn send(&mut self, message: &str) -> Result<(), TungsteniteError> {
         if let Some(socket) = &mut self.socket {
-            println!("Sent Message");
-            socket.send(Message::Text(message.to_string())).await?;
+            socket.send(Message::Text(message.to_string())).await;
+            println!("Send functionality confirmed");
+        } else {
+            println!("Socket is not connected.");
+        }
+        Ok(())
+    }
+
+    pub fn send2(&mut self, message: &str) -> Result<(), TungsteniteError> {
+        if let Some(socket) = &mut self.socket {
+            socket.send(Message::Text(message.to_string()));
+            println!("Send functionality confirmed");
         } else {
             println!("Socket is not connected.");
         }

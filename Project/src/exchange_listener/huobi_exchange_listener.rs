@@ -11,6 +11,7 @@ use flate2::read::GzDecoder;
 use tokio_tungstenite::tungstenite::{Message};
 use std::io::Read;
 use serde_json::{Value, json};
+use tokio::time::{sleep, Duration};
 
 pub struct HuobiExchangeListener<'a> {
     id: i32,
@@ -93,11 +94,10 @@ impl<'a> ExchangeListener for HuobiExchangeListener<'a> {
                         Message::Ping(ping_data) => {
                             println!("Ping branch Reached");
                             let pong_response = json!({ "pong": ping_data }).to_string();
-                            println!("Sent Pong response: {}", pong_response);
-                            self.subscription.send(&pong_response);
+                            println!("SPR: {}", pong_response);
+                            self.subscription.send2(&pong_response);
                         },
                         Message::Binary(data) => {
-                            println!("Binary branch reached!!!!");
                             //println!("Received binary data: {:?}", data);
             
                             // Attempt to decompress the data using a GZIP decoder
@@ -105,21 +105,27 @@ impl<'a> ExchangeListener for HuobiExchangeListener<'a> {
                             let mut decompressed_data = Vec::new();
                             match decoder.read_to_end(&mut decompressed_data) {
                                 Ok(_) => {
-                                    println!("WE HAVE DECOMPRESSED THE DATA");
                                     // println!("Decompressed data: {:?}", decompressed_data);
                                     
                                     // Convert decompressed data to text
                                     let text = String::from_utf8(decompressed_data).expect("Found invalid UTF-8");
-                                    println!("Decompressed text: {}", text);
+                                    //println!("Decompressed text: {}", text);
                                     let dpp = self.parse_message(&text);
             
                                     // Respond to pings
                                     if let Ok(parsed) = serde_json::from_str::<Value>(&text) {
                                         if let Some(ping) = parsed.get("ping") {
-                                            let pong_response = json!({ "pong": ping }).to_string();
+                                            //let pong_response = json!({"pong" : ping}).to_string();
+                                            println!("{}", text);
+                                            let pong_response = format!("{{\"pong\":{}}}", ping);
                                             //self.subscription.send("").expect("Failed to send pong");
-                                            self.subscription.send(&pong_response);
+                                            println!("BEGIN");
+                                            self.subscription.send2(&pong_response);
                                             println!("Sent Pong response: {}", pong_response);
+                                            println!("END");
+                                            println!("");
+                                            println!("");
+                                            println!("");
                                         }
                                     }
                                 },
@@ -149,7 +155,7 @@ impl<'a> ExchangeListener for HuobiExchangeListener<'a> {
                     None
                 },
                 Poll::Pending => {
-                    println!("Waiting...");
+                    //println!("Waiting...");
                     None
                 }
             }
