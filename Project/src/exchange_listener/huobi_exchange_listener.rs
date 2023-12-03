@@ -46,11 +46,12 @@ impl<'a> ExchangeListener for HuobiExchangeListener<'a> {
         let mut ask_vector: Vec<(f64, f64)> = Vec::new();
         let mut bid_vector: Vec<(f64, f64)> = Vec::new();
     
-        for i in 0..20 {
+        for i in 0..5 {
             let ask_price: Option<f64> = parsed_data["tick"]["asks"][i][0].as_f64();
             let ask_quantity: Option<f64> = parsed_data["tick"]["asks"][i][1].as_f64();
             let bid_price: Option<f64> = parsed_data["tick"]["bids"][i][0].as_f64();
             let bid_quantity: Option<f64> = parsed_data["tick"]["bids"][i][1].as_f64();
+            //println!("{}", parsed_data["tick"]["bids"][i][1]);
 
             //TODO: not unwrapping correctly always going to default value
             let ask_pair: (f64, f64) = (
@@ -62,6 +63,7 @@ impl<'a> ExchangeListener for HuobiExchangeListener<'a> {
                 bid_price.unwrap_or_default(),
                 bid_quantity.unwrap_or_default(),
             );
+            //println!("{}", bid_pair.0);
 
             ask_vector.push(ask_pair);
             bid_vector.push(bid_pair);
@@ -110,7 +112,6 @@ impl<'a> ExchangeListener for HuobiExchangeListener<'a> {
                                     // Convert decompressed data to text
                                     let text = String::from_utf8(decompressed_data).expect("Found invalid UTF-8");
                                     //println!("Decompressed text: {}", text);
-                                    let dpp = self.parse_message(&text);
             
                                     // Respond to pings
                                     if let Ok(parsed) = serde_json::from_str::<Value>(&text) {
@@ -126,6 +127,14 @@ impl<'a> ExchangeListener for HuobiExchangeListener<'a> {
                                             println!("");
                                             println!("");
                                             println!("");
+                                        } else {
+                                            let dpp = self.parse_message(&text);
+                                            if let DataEnum::MBP(mbp) = dpp.data {
+                                                let asks_vector = &mbp.asks;
+                                                println!("Asks: {:?}", asks_vector);
+                                            } else {
+                                                println!("failure");
+                                            }
                                         }
                                     }
                                 },
