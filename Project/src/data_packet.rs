@@ -10,6 +10,7 @@ pub enum SymbolEnum {
 }
 
 pub struct DataPacket {
+    pub prevSeqNum: i64,
     pub data: DataEnum,
     pub exchange: ExchangeEnum,
     pub symbol_pair: SymbolEnum,

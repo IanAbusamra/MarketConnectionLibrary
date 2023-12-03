@@ -74,7 +74,10 @@ impl<'a> ExchangeListener for HuobiExchangeListener<'a> {
             bids: bid_vector,
         };
 
+        let prevNum: i64 = parsed_data["tick"]["prevSeqNum"].as_i64().unwrap_or_default();
+        
         let ret = DataPacket {
+            prevSeqNum: prevNum,
             data: DataEnum::MBP(enum_creator),
             exchange: Huobi,
             symbol_pair: BTCUSD,
@@ -94,32 +97,25 @@ impl<'a> ExchangeListener for HuobiExchangeListener<'a> {
                 Poll::Ready(Some(Ok(msg))) => {
                     match msg {
                         Message::Ping(ping_data) => {
-                            println!("Ping branch Reached");
                             let pong_response = json!({ "pong": ping_data }).to_string();
                             println!("SPR: {}", pong_response);
                             self.subscription.send2(&pong_response);
                         },
                         Message::Binary(data) => {
-                            //println!("Received binary data: {:?}", data);
-            
                             // Attempt to decompress the data using a GZIP decoder
                             let mut decoder = GzDecoder::new(&data[..]);
                             let mut decompressed_data = Vec::new();
                             match decoder.read_to_end(&mut decompressed_data) {
                                 Ok(_) => {
-                                    // println!("Decompressed data: {:?}", decompressed_data);
-                                    
                                     // Convert decompressed data to text
                                     let text = String::from_utf8(decompressed_data).expect("Found invalid UTF-8");
-                                    //println!("Decompressed text: {}", text);
+                                    println!("{}", text);
             
                                     // Respond to pings
                                     if let Ok(parsed) = serde_json::from_str::<Value>(&text) {
                                         if let Some(ping) = parsed.get("ping") {
-                                            //let pong_response = json!({"pong" : ping}).to_string();
                                             println!("{}", text);
                                             let pong_response = format!("{{\"pong\":{}}}", ping);
-                                            //self.subscription.send("").expect("Failed to send pong");
                                             println!("BEGIN");
                                             self.subscription.send2(&pong_response);
                                             println!("Sent Pong response: {}", pong_response);
@@ -144,7 +140,6 @@ impl<'a> ExchangeListener for HuobiExchangeListener<'a> {
                             }
                         },
                         Message::Text(text) => {
-                            println!("text branch reached");
                             println!("Received text: {}", text);
                             // Handle text message.
                         },

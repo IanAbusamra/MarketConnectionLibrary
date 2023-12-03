@@ -7,6 +7,7 @@ use crate::data_packet::ExchangeEnum::*;
 use futures::task::{Context, Poll, noop_waker_ref};
 use std::pin::Pin;
 use futures_util::Stream;
+use chrono::{Utc, TimeZone};
 
 pub struct BinanceExchangeListener<'a> {
     pub id: i32,
@@ -69,6 +70,7 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
         };
 
         let ret = DataPacket {
+            prevSeqNum: 0,
             data: DataEnum::MBP(enum_creator),
             exchange: Binance,
             symbol_pair: BTCUSD,
@@ -77,6 +79,10 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
         };
         Box::new(ret)
     }
+
+    // fn trade(&self, api_key: &str, secret_key: &str, symbol: &str, side: &str, quantity: &str) {
+    //     let timestamp = chrono::Utc::now().timestamp_millis().to_string();
+    // }
 
     fn poll(&mut self) -> Option<()> {
         let waker = noop_waker_ref();
