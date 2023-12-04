@@ -27,6 +27,23 @@ async fn main() {
     })
     .to_string();
     let mut huobi_listener = HuobiExchangeListener::new(1, &mut huobi_websocket);
+
+    let api_key = "a54758d1-e326372e-409c8cd7-dab4c45e6f";
+    let secret_key = "b9a0467a-ea5426e1-3178806d-68b1b";
+    let endpoint = "/v1/account/accounts";
+    let method = "GET";
+    let params = vec![];
+
+    // Call the authenticated_request method
+    match huobi_listener.authenticated_request(api_key, secret_key, "GET", endpoint, &params).await {
+        Ok(response) => {
+            println!("Authenticated request successful: {:?}", response);
+        },
+        Err(e) => {
+            eprintln!("Authenticated request failed: {:?}", e);
+        },
+    }
+    
     huobi_listener.subscribe().await;
     huobi_websocket
         .send(&depth_subscription)
@@ -36,7 +53,7 @@ async fn main() {
         HuobiExchangeListener::new(1, &mut huobi_websocket);
 
     // Example Event Loop
-    let mut cnt = 0;
+    // let mut cnt = 0;
     loop {
         huobi_listener.poll();
         //binance_listener.poll();

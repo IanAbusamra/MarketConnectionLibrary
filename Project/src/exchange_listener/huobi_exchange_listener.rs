@@ -11,7 +11,42 @@ use flate2::read::GzDecoder;
 use tokio_tungstenite::tungstenite::{Message};
 use std::io::Read;
 use serde_json::{Value, json};
-use tokio::time::{sleep, Duration};
+use tokio_tungstenite::tungstenite::{error::Error as TungsteniteError};
+use hmac_sha256::HMAC;
+use serde::{Deserialize, Serialize};
+use chrono::Utc;
+use urlencoding::encode;
+use reqwest::{self, Client, Error as ReqwestError, Method};
+
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ApiResponse {
+    pub status: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub err_code: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub err_msg: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub data: Option<Value>, // Use serde_json::Value to represent any structured data
+}
+
+// You can also create more specific structs for known response formats:
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AccountInfo {
+    pub id: i64,
+    #[serde(rename = "type")]
+    pub account_type: String,
+    pub state: String,
+    // ... other fields as documented by the API
+}
+
+// If you expect a list of accounts in the `data` field:
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AccountsResponse {
+    pub status: String,
+    pub data: Vec<AccountInfo>,
+    // ... include status, err_code, err_msg similar to ApiResponse
+}
 
 pub struct HuobiExchangeListener<'a> {
     id: i32,
@@ -26,6 +61,78 @@ impl<'a> HuobiExchangeListener<'a> {
     pub fn get_subscription(&mut self) -> &mut WebSocket {
         &mut self.subscription
     }
+
+    pub async fn place_order(&mut self, account_id: &str, amount: f64,  price: f64, symbol: &str, order_type: &str) -> Result<(), TungsteniteError> {
+        let order_message = json!({
+            "account-id": account_id,
+            "amount": amount.to_string(),
+            "price": price.to_string(),
+            "symbol": symbol,
+            "type": order_type
+        }).to_string();
+    
+        let send_message = json!({
+            "op": "order",
+            "data": order_message
+        }).to_string();
+    
+        self.subscription.send(&send_message).await.expect("Failed to send order");
+    
+        Ok(())
+    }
+
+    pub async fn authenticated_request(
+        &self,
+        api_key: &str,
+        secret_key: &str,
+        http_method: &str,
+        endpoint: &str,
+        params: &[(String, String)],
+    ) -> Result<ApiResponse, ReqwestError> {
+        let timestamp = Utc::now().format("%Y-%m-%dT%H:%M:%S").to_string();
+
+        // Manually building the parameter string in the required order
+        let mut query_string = format!(
+            "SignatureMethod=HmacSHA256&SignatureVersion=2&AccessKeyId={}&Timestamp={}",
+            encode(api_key), encode(&timestamp)
+        );
+
+        // Add any additional parameters
+        for (key, value) in params {
+            query_string = format!("{}&{}={}", query_string, key, encode(value));
+        }
+
+        let pre_signed_text = format!("{}\napi.huobi.pro\n{}\n{}", http_method.to_uppercase(), endpoint, query_string);
+        let signature = HMAC::mac(pre_signed_text.as_bytes(), secret_key.as_bytes());
+        let signature_base64 = base64::encode(signature);
+
+        let url = format!("https://api.huobi.pro{}?{}&Signature={}", endpoint, query_string, encode(&signature_base64));
+        println!("Request URL: {}", url);
+
+        let reqwest_method = match http_method.parse::<Method>() {
+            Ok(valid_method) => valid_method,
+            Err(_) => {
+                eprintln!("Invalid HTTP method: {}", http_method);
+                panic!("Invalid HTTP method: {}", http_method);
+            }
+        };
+
+        let client = Client::new();
+        let response = client
+            .request(reqwest_method, &url)
+            .send()
+            .await?
+            .json::<ApiResponse>()
+            .await?;
+
+        Ok(response)
+    }
+
+    /* 
+    pub asych fn cancel_order(){
+
+    }
+    */
 }
 
 #[async_trait]
