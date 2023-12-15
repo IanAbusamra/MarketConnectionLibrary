@@ -10,7 +10,8 @@ pub enum SymbolEnum {
 }
 
 pub struct DataPacket {
-    pub prevSeqNum: i64,
+    pub curNum: i64,
+    pub prevNum: i64,
     pub data: DataEnum,
     pub exchange: ExchangeEnum,
     pub symbol_pair: SymbolEnum,
@@ -27,13 +28,6 @@ pub struct MarketIncremental {
     pub asks: Vec<(f64, f64)>,
     pub bids: Vec<(f64, f64)>,
 }
-
-// pub struct MarketIncremental {
-//     pub bestask: f64,
-//     pub askamount: f64,
-//     pub bestbid: f64,
-//     pub bidamount: f64,
-// }
 
 pub struct RefreshBidAsk {
     pub asks: Vec<(f64, f64)>, //price, amount

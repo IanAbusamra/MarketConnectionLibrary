@@ -35,5 +35,5 @@ pub trait ExchangeListener {
     ///
     /// # Returns
     /// An `Option<()>` which is `Some(())` if new data is received or `None` if no data is available.
-    fn poll(&mut self) -> Option<()>;
+    fn poll(&mut self) -> Result<Option<Box<DataPacket>>, String>;
 }

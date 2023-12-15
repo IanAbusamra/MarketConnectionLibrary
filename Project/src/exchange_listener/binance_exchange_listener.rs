@@ -16,7 +16,7 @@ pub struct BinanceExchangeListener<'a> {
 
 impl<'a> BinanceExchangeListener<'a> {
     pub fn new(id: i32, subscription: &'a mut WebSocket) -> Self {
-        BinanceExchangeListener { id, subscription, }
+        BinanceExchangeListener { id, subscription}
     }
 
     pub fn get_subscription(&mut self) -> &mut WebSocket {
@@ -41,7 +41,6 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
     
         let mut ask_vector: Vec<(f64, f64)> = Vec::new();
         let mut bid_vector: Vec<(f64, f64)> = Vec::new();
-        println!("{}", parsed_data["asks"][0][0]);
 
         for i in 0..5 {
             let ask_price: Option<f64> = parsed_data["asks"][i][0].as_f64();
@@ -49,7 +48,6 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
             let bid_price: Option<f64> = parsed_data["bids"][i][0].as_f64();
             let bid_quantity: Option<f64> = parsed_data["bids"][i][1].as_f64();
 
-            //TODO: not unwrapping correctly always going to default value
             let ask_pair: (f64, f64) = (
                 ask_price.unwrap_or_default(),
                 ask_quantity.unwrap_or_default(),
@@ -69,8 +67,11 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
             bids: bid_vector,
         };
 
+        let given_id = parsed_data["lastUpdateId"].as_i64().unwrap_or_default();
+
         let ret = DataPacket {
-            prevSeqNum: 0,
+            prevNum: -1,
+            curNum: given_id,
             data: DataEnum::MBP(enum_creator),
             exchange: Binance,
             symbol_pair: BTCUSD,
@@ -84,7 +85,7 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
     //     let timestamp = chrono::Utc::now().timestamp_millis().to_string();
     // }
 
-    fn poll(&mut self) -> Option<()> {
+    fn poll(&mut self) -> Result<Option<Box<DataPacket>>, String> {
         let waker = noop_waker_ref();
         let mut context = Context::from_waker(&waker);
         if let Some(socket) = self.get_subscription().get_mut_socket() {
@@ -93,35 +94,38 @@ impl<'a> ExchangeListener for BinanceExchangeListener<'a> {
             match socket.poll_next(&mut context) {
                 Poll::Ready(Some(Ok(message))) => {
                     println!("{}", message);
-                    let data_packet = self.parse_message(&message.to_string());
-                    match data_packet.data {
-                        DataEnum::MBP(bba_data) => {
-                            let asks_vector = bba_data.asks;
-                            println!("{:?}", asks_vector);
-                        }
-                        DataEnum::RBA(_) => {
-                            println!("Received RBA data.");
-                        }
+                    let dpp = self.parse_message(&message.to_string());
+                    let timestamp = dpp.curNum;
+                    //
+                    //
+                    //
+                    //Implement with binance's server time if possible
+                    let serverTime: i64 = 0;
+                    //
+                    //
+                    //there's also an additional recvWindow parameter to use - I don't think needed.
+                    if timestamp < (serverTime + 1000) {
+                        Ok(Some(dpp))
+                    } else {
+                        return Err("Sequence number gap detected. Refresh needed.".to_string());
                     }
-
-                    Some(())
                 },
                 Poll::Ready(Some(Err(e))) => {
                     println!("Error receiving message: {:?}", e);
-                    None
+                    Ok(None)
                 },
                 Poll::Ready(None) => {
                     println!("Socket closed.");
-                    None
+                    Ok(None)
                 },
                 Poll::Pending => {
                     println!("Waiting...");
-                    None
+                    Ok(None)
                 }
             }
         } else {
             println!("WebSocket is not connected.");
-            None
+            Ok(None)
         }
     }
 

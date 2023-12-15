@@ -51,11 +51,12 @@ pub struct AccountsResponse {
 pub struct HuobiExchangeListener<'a> {
     id: i32,
     subscription: &'a mut WebSocket,
+    prevNum: i64,
 }
 
 impl<'a> HuobiExchangeListener<'a> {
     pub fn new(id: i32, subscription: &'a mut WebSocket) -> Self {
-        HuobiExchangeListener { id, subscription, }
+        HuobiExchangeListener { id, subscription, prevNum: -1}
     }
 
     pub fn get_subscription(&mut self) -> &mut WebSocket {
@@ -158,9 +159,7 @@ impl<'a> ExchangeListener for HuobiExchangeListener<'a> {
             let ask_quantity: Option<f64> = parsed_data["tick"]["asks"][i][1].as_f64();
             let bid_price: Option<f64> = parsed_data["tick"]["bids"][i][0].as_f64();
             let bid_quantity: Option<f64> = parsed_data["tick"]["bids"][i][1].as_f64();
-            //println!("{}", parsed_data["tick"]["bids"][i][1]);
 
-            //TODO: not unwrapping correctly always going to default value
             let ask_pair: (f64, f64) = (
                 ask_price.unwrap_or_default(),
                 ask_quantity.unwrap_or_default(),
@@ -170,7 +169,6 @@ impl<'a> ExchangeListener for HuobiExchangeListener<'a> {
                 bid_price.unwrap_or_default(),
                 bid_quantity.unwrap_or_default(),
             );
-            //println!("{}", bid_pair.0);
 
             ask_vector.push(ask_pair);
             bid_vector.push(bid_pair);
@@ -182,9 +180,11 @@ impl<'a> ExchangeListener for HuobiExchangeListener<'a> {
         };
 
         let prevNum: i64 = parsed_data["tick"]["prevSeqNum"].as_i64().unwrap_or_default();
+        let curNum: i64 = parsed_data["tick"]["seqNum"].as_i64().unwrap_or_default();
         
         let ret = DataPacket {
-            prevSeqNum: prevNum,
+            curNum: curNum,
+            prevNum: prevNum,
             data: DataEnum::MBP(enum_creator),
             exchange: Huobi,
             symbol_pair: BTCUSD,
@@ -193,7 +193,8 @@ impl<'a> ExchangeListener for HuobiExchangeListener<'a> {
         };
         Box::new(ret)
     }
-    fn poll(&mut self) -> Option<()> {
+
+    fn poll(&mut self) -> Result<Option<Box<DataPacket>>, String> {
         let waker = noop_waker_ref();
         let mut context = Context::from_waker(&waker);
 
@@ -204,9 +205,8 @@ impl<'a> ExchangeListener for HuobiExchangeListener<'a> {
                 Poll::Ready(Some(Ok(msg))) => {
                     match msg {
                         Message::Ping(ping_data) => {
-                            let pong_response = json!({ "pong": ping_data }).to_string();
-                            println!("SPR: {}", pong_response);
-                            self.subscription.send2(&pong_response);
+                            //Never Reached
+                            Ok(None)
                         },
                         Message::Binary(data) => {
                             // Attempt to decompress the data using a GZIP decoder
@@ -230,49 +230,54 @@ impl<'a> ExchangeListener for HuobiExchangeListener<'a> {
                                             println!("");
                                             println!("");
                                             println!("");
+                                            Ok(None)
                                         } else {
                                             let dpp = self.parse_message(&text);
-                                            if let DataEnum::MBP(mbp) = dpp.data {
-                                                let asks_vector = &mbp.asks;
-                                                println!("Asks: {:?}", asks_vector);
+                                            if self.prevNum == -1 {
+                                                self.prevNum = dpp.curNum;
+                                            } else if dpp.prevNum != self.prevNum {
+                                                return Err("Sequence number gap detected. Refresh needed.".to_string());
                                             } else {
-                                                println!("failure");
+                                                self.prevNum = dpp.curNum;
                                             }
+                                            Ok(Some(dpp))
                                         }
+                                    } else {
+                                        Ok(None)
                                     }
                                 },
                                 Err(e) => {
                                     println!("Failed to decompress GZIP data: {:?}", e);
+                                    Ok(None)
                                 }
                             }
                         },
                         Message::Text(text) => {
-                            println!("Received text: {}", text);
-                            // Handle text message.
+                            //Never Reached
+                            Ok(None)
                         },
                         _ => {
-                            // Handle other message types
+                            //Never Reached
+                            Ok(None)
                         }
                     }
-
-                    Some(())
                 },
                 Poll::Ready(Some(Err(e))) => {
                     println!("Error receiving message: {:?}", e);
-                    None
+                    Ok(None)
                 },
                 Poll::Ready(None) => {
                     println!("Socket closed.");
-                    None
+                    Ok(None)
                 },
                 Poll::Pending => {
                     //println!("Waiting...");
-                    None
+                    Ok(None)
                 }
             }
         } else {
             println!("WebSocket is not connected.");
-            None
+            Ok(None)
         }
     }
 /*     
