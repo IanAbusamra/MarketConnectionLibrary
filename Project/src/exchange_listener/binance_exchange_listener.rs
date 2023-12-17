@@ -8,6 +8,11 @@ use futures::task::{Context, Poll, noop_waker_ref};
 use std::pin::Pin;
 use futures_util::Stream;
 use chrono::{Utc, TimeZone};
+use hmac::{Hmac, Mac, NewMac};
+use sha2::Sha256;
+use hex::encode as hex_encode;
+use reqwest::{self, Error as ReqwestError};
+use reqwest::Response;
 
 pub struct BinanceExchangeListener<'a> {
     pub id: i32,
@@ -16,11 +21,50 @@ pub struct BinanceExchangeListener<'a> {
 
 impl<'a> BinanceExchangeListener<'a> {
     pub fn new(id: i32, subscription: &'a mut WebSocket) -> Self {
-        BinanceExchangeListener { id, subscription}
+        BinanceExchangeListener { 
+            id, 
+            subscription,
+        }
     }
 
     pub fn get_subscription(&mut self) -> &mut WebSocket {
         &mut self.subscription
+    }
+}
+
+impl<'a> BinanceExchangeListener<'a> {
+    pub async fn authenticated_request(
+        &self,
+        api_key: &str,
+        secret_key: &str,
+    ) -> Result<String, String> {
+        let endpoint = "https://api.binance.com/api/v3/account";
+        let timestamp = chrono::Utc::now().timestamp_millis().to_string();
+        let query_string = format!("timestamp={}", timestamp);
+    
+        // Create HMAC SHA256 signature
+        let mut mac = Hmac::<Sha256>::new_from_slice(secret_key.as_bytes())
+            .expect("HMAC can take key of any size");
+        mac.update(query_string.as_bytes());
+        let signature = hex_encode(mac.finalize().into_bytes());
+    
+        // Append signature to query string
+        let signed_query = format!("{}&signature={}", query_string, signature);
+    
+        // Make HTTP GET request
+        let client = reqwest::Client::new();
+        let response = client.get(endpoint)
+            .header("X-MBX-APIKEY", api_key)
+            .query(&[("timestamp", timestamp.as_str()), ("signature", signature.as_str())])
+            .send()
+            .await
+            .map_err(|e| e.to_string())?;
+    
+        if response.status().is_success() {
+            response.text().await.map_err(|e| e.to_string())
+        } else {
+            Err(format!("Error: {}", response.status()))
+        }
     }
 }
 

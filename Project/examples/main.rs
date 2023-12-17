@@ -12,10 +12,12 @@ static HUOBI_WS_API: &str = "wss://api.huobi.pro/ws";
 #[tokio::main(flavor = "current_thread")]
 async fn main() {
     // Binance initialization
-    // let binance_url = format!("{}/ws/ethbtc@depth5@100ms", BINANCE_WS_API);
-    // let mut binance_websocket = WebSocket::new(&binance_url);
-    // let mut binance_listener: BinanceExchangeListener<'_> = BinanceExchangeListener::new(1, &mut binance_websocket);
-    // binance_listener.subscribe().await;
+    let api_key = "your_api_key";
+    let secret_key = "your_secret_key";
+    let binance_url = format!("{}/ws/ethbtc@depth5@100ms", BINANCE_WS_API);
+    let mut binance_websocket = WebSocket::new(&binance_url);
+    let mut binance_listener: BinanceExchangeListener<'_> = BinanceExchangeListener::new(1, &mut binance_websocket);
+    binance_listener.subscribe().await;
 
     // Huobi Initialization
     let huobi_url = format!("{}", HUOBI_WS_API);
@@ -28,6 +30,7 @@ async fn main() {
     .to_string();
     let mut huobi_listener = HuobiExchangeListener::new(1, &mut huobi_websocket);
 
+    /*
     let api_key = "a54758d1-e326372e-409c8cd7-dab4c45e6f";
     let secret_key = "b9a0467a-ea5426e1-3178806d-68b1b";
     let endpoint = "/v1/account/accounts";
@@ -37,11 +40,18 @@ async fn main() {
     // Call the authenticated_request method
     match huobi_listener.authenticated_request(api_key, secret_key, "GET", endpoint, &params).await {
         Ok(response) => {
-            println!("Authenticated request successful: {:?}", response);
+            // println!("Authenticated request successful: {:?}", response);
         },
         Err(e) => {
-            eprintln!("Authenticated request failed: {:?}", e);
+            // eprintln!("Authenticated request failed: {:?}", e);
         },
+    }
+    */
+    
+    // Binance Authentication
+    match binance_listener.authenticated_request(api_key, secret_key).await {
+        Ok(response) => println!("Success: {}", response),
+        Err(e) => println!("Error: {}", e),
     }
     
     huobi_listener.subscribe().await;
@@ -55,10 +65,10 @@ async fn main() {
     // Example Event Loop
     // let mut cnt = 0;
     loop {
-        huobi_listener.poll();
-        //binance_listener.poll();
+        //huobi_listener.poll();
+        binance_listener.poll();
 
-        sleep(Duration::from_millis(5)).await;
+        sleep(Duration::from_millis(1000)).await;
         // if cnt < 1 {
         //     sleep(Duration::from_millis(500)).await;
         // }
